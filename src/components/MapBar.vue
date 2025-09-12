@@ -7,10 +7,7 @@ import Map from "@/components/Map.vue";
 
 <template>
     <div class="navbar-guess">
-        <Map />
-        <NavBar class="guess-bar">
-            <NavItem class="guess-item">Guess</NavItem>
-        </NavBar>
+        <slot></slot>
     </div>
 </template>
 
@@ -23,12 +20,5 @@ import Map from "@/components/Map.vue";
     position: absolute;
     align-items: flex-end;
     flex-direction: column;
-}
-.guess-bar {
-    margin-right: 5px;
-    width: calc(100% - 15px);
-}
-.guess-item {
-    width: 100%;
 }
 </style>

@@ -1,17 +1,17 @@
 [
   {
     "id": 1,
-    "name": "Eiffel Tower, Paris",
-    "coords": [123, 456]
+    "name": "Blahaj",
+    "coords": [171, 54]
   },
   {
     "id": 2,
-    "name": "Egypt, Cairo",
-    "coords": [123, 456]
+    "name": "Spawn",
+    "coords": [303, -96]
   },
   {
     "id": 3,
-    "name": "uhhh rusia",
-    "coords": [123, 456]
+    "name": "Boat",
+    "coords": [271, -193]
   }
 ]

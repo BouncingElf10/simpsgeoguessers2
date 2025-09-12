@@ -1,22 +1,29 @@
 <script setup>
 import { ref } from "vue";
 
-// Components
 import NavBar from "@/components/NavBar.vue";
 import NavItem from "@/components/NavItem.vue";
 import MapBar from "@/components/MapBar.vue";
 import MapImage from "@/components/MapImage.vue";
 import Icon from "@/assets/internal/returnarrow.svg";
 import PlacesJson from "@/assets/places.json";
+import Map from "@/components/Map.vue";
 
 const mapImageRef = ref(null);
 
 const currentCoords = ref({})
+const guessCoords = ref({})
 const currentId = ref(0)
 const currentPlaceName = ref("")
 
+const offset = {x: 796 - 169, y: 656 - 48}
+
 function startGame() {
     getRandomPlace()
+}
+
+function placedGuess() {
+
 }
 
 function getRandomPlace() {
@@ -25,6 +32,11 @@ function getRandomPlace() {
     currentId.value = randomPlace.id
     currentCoords.value = randomPlace.coords
     currentPlaceName.value = randomPlace.name
+}
+
+function handleMapClick(coords) {
+    guessCoords.value = {x: Math.floor(coords.x) - offset.x, y: Math.floor(coords.y) - offset.y}
+    console.log("Clicked coords in parent:", guessCoords.value)
 }
 
 </script>
@@ -50,7 +62,18 @@ function getRandomPlace() {
                 <NavItem>yeeah Item</NavItem>
             </NavBar>
         </div>
-        <MapBar />
+        <MapBar>
+            <Map @map-click="handleMapClick" />
+            <NavBar class="guess-bar">
+                <NavItem
+                    class="guess-item"
+                    @click="placedGuess"
+                    :class="{ disabled: !guessCoords.x && !guessCoords.y }"
+                    :disabled="!guessCoords.x && !guessCoords.y">
+                    Guess
+                </NavItem>
+            </NavBar>
+        </MapBar>
     </MapImage>
 </template>
 
@@ -72,4 +95,18 @@ function getRandomPlace() {
 .return-icon {
     fill: white;
 }
+.guess-bar {
+    margin-right: 5px;
+    width: calc(100% - 15px);
+}
+.guess-item {
+    width: 100%;
+}
+.guess-item[disabled],
+.guess-item.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+    background-color: #888;
+}
+
 </style>

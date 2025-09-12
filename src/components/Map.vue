@@ -1,8 +1,12 @@
 <script setup lang="ts">
     import L from "leaflet"
-    import {onMounted, ref} from "vue";
+    import {defineProps, onMounted, ref} from "vue";
 
+    const emit = defineEmits<{
+        (e: "map-click", coords: { x: number; y: number }): void
+    }>()
     let map = ref<L.Map>()
+    let marker = ref<L.Marker>()
 
     onMounted(() => {
         map.value = L.map("map", {
@@ -40,7 +44,13 @@
         }
 
         function onMapClick(e) {
-            console.log("Clicked at:", e.latlng)
+            if (marker.value) {
+                marker.value.setLatLng(e.latlng)
+            } else {
+                marker.value = L.marker(e.latlng).addTo(map.value!)
+            }
+
+            emit("map-click", { x: e.latlng.lng, y: e.latlng.lat })
         }
         map.value.on("click", onMapClick)
     })

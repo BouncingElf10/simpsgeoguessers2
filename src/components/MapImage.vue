@@ -9,7 +9,7 @@
     })
 
     function getImageUrl(id: number) {
-        return new URL(`../assets/images/${id}.jpg`, import.meta.url).href
+        return new URL(`../assets/images/${id}.png`, import.meta.url).href
     }
 
 </script>
