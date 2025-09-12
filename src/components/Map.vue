@@ -5,12 +5,31 @@
     let map = ref<L.Map>()
 
     onMounted(() => {
-        map.value = L.map("map", { attributionControl: false }).setView([51.505, -0.09], 13)
+        map.value = L.map("map", {
+            attributionControl: false,
+            crs: L.CRS.Simple,
+            minZoom: -1,
+            maxZoom: 4,
+            zoom: 0,
+        })
+        const imageUrl = new URL(`../assets/map.png`, import.meta.url).href
+        const imageBounds = [[0, 0], [1544, 1555]]
+        L.imageOverlay(imageUrl, imageBounds).addTo(map.value)
 
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "",
-            detectRetina: false,
-        }).addTo(map.value)
+        map.value.fitBounds(imageBounds)
+
+        map.value.on("zoomend", () => {
+            const currentZoom = map.value.getZoom()
+            const imageLayers = document.querySelectorAll(".leaflet-image-layer")
+
+            imageLayers.forEach((img) => {
+                if (currentZoom >= 1) {
+                    (img as HTMLElement).style.imageRendering = "pixelated"
+                } else {
+                    (img as HTMLElement).style.imageRendering = "auto"
+                }
+            })
+        })
 
         const mapElement = document.getElementById("map")
         if (mapElement) {
@@ -21,9 +40,9 @@
         }
 
         function onMapClick(e) {
-
+            console.log("Clicked at:", e.latlng)
         }
-        map.value.on('click', onMapClick);
+        map.value.on("click", onMapClick)
     })
 </script>
 
