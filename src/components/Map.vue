@@ -19,6 +19,11 @@
             })
             resizeObserver.observe(mapElement)
         }
+
+        function onMapClick(e) {
+
+        }
+        map.value.on('click', onMapClick);
     })
 </script>
 

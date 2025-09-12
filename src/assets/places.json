@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "name": "Eiffel Tower, Paris",
+    "coords": [123, 456]
+  },
+  {
+    "id": 2,
+    "name": "Egypt, Cairo",
+    "coords": [123, 456]
+  },
+  {
+    "id": 3,
+    "name": "uhhh rusia",
+    "coords": [123, 456]
+  }
+]
