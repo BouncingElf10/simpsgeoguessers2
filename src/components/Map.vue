@@ -6,7 +6,7 @@
         (e: "map-click", coords: { x: number; y: number }): void
     }>()
     let map = ref<L.Map>()
-    let marker = ref<L.Marker>()
+    let guessMarker = ref<L.Marker>()
 
     onMounted(() => {
         map.value = L.map("map", {
@@ -44,16 +44,31 @@
         }
 
         function onMapClick(e) {
-            if (marker.value) {
-                marker.value.setLatLng(e.latlng)
+            if (guessMarker.value) {
+                guessMarker.value.setLatLng(e.latlng)
             } else {
-                marker.value = L.marker(e.latlng).addTo(map.value!)
+                guessMarker.value = L.marker(e.latlng).addTo(map.value!)
             }
-
             emit("map-click", { x: e.latlng.lng, y: e.latlng.lat })
         }
         map.value.on("click", onMapClick)
     })
+
+    function showCorrectMarker(correctGuess, actualGuess) {
+        console.log("Correct guess:", correctGuess)
+        L.marker({
+            lat: correctGuess.y,
+            lng: correctGuess.x
+        }).addTo(map.value!)
+        L.polyline(
+            [[actualGuess.y, actualGuess.x], [correctGuess.y, correctGuess.x]],
+            { color: "red", weight: 3}
+        ).addTo(map.value!);
+        const bounds = L.latLngBounds([[actualGuess.y, actualGuess.x], [correctGuess.y, correctGuess.x]]);
+        map.value!.fitBounds(bounds, { padding: [50, 50], maxZoom: 4 });
+    }
+
+    defineExpose({ showCorrectMarker })
 </script>
 
 <template>
