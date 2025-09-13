@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import {nextTick, ref} from "vue";
 
 import NavBar from "@/components/NavBar.vue";
 import NavItem from "@/components/NavItem.vue";
@@ -15,25 +15,40 @@ const mapRef = ref(null);
 const alignmentData = {mapX: 796, mapY: 656, mcX: 169, mcY: 48}
 const offset = {x: 796 - 169, y: 656 - 48}
 
+const guessHistory = ref([])
+
 const currentCoords = ref({})
 const guessCoords = ref({})
 const currentId = ref(0)
 const currentPlaceName = ref("")
 const round = ref(0)
+const points = ref(0)
+const distance = ref(0)
+
 const isFullscreen = ref(false);
 
+
 function startGame() {
+    round.value = 0;
+    guessHistory.value = [];
     continueGame()
 }
 
 function continueGame() {
     getRandomPlace()
     round.value++
+    mapRef.value.clearMap()
     isFullscreen.value = false;
     setTimeout(() => {
         mapRef.value?.invalidateSize?.()
     }, 50);
     guessCoords.value = {}
+    mapRef.value.defaultBounds()
+    guessHistory.value.push({
+        guessCoords: guessCoords.value,
+        currentCoords: currentCoords.value,
+        points: points,
+        round: round.value})
 }
 
 function placedGuess() {
@@ -42,13 +57,25 @@ function placedGuess() {
         console.warn("No current place selected yet");
         return;
     }
-    mapRef.value.showCorrectMarker({
+    const alignedCurrentCoords = {
         x: currentCoords.value.x + offset.x,
         y: (offset.y - currentCoords.value.y) + alignmentData.mcY * 2
-        }, {
+    }
+    const alignedGuessCoords = {
         x: guessCoords.value.x + offset.x,
         y: (offset.y - guessCoords.value.y) - alignmentData.mcY * 2
-        });
+    }
+    setTimeout(() => {
+        mapRef.value.showCorrectMarker(alignedCurrentCoords, alignedGuessCoords);
+    }, 50);
+    calculatePoints(alignedCurrentCoords, alignedGuessCoords)
+}
+
+function calculatePoints(currentCoords, guessCoords) {
+    const xDiff = Math.abs(currentCoords.x - guessCoords.x)
+    const yDiff = Math.abs(currentCoords.y - guessCoords.y)
+    distance.value = Math.sqrt(xDiff * xDiff + yDiff * yDiff)
+    points.value = clamp(Math.round(100 - (distance.value / 100) * 100), 0, 100)
 }
 
 function getRandomPlace() {
@@ -71,6 +98,9 @@ function handleMapClick(coords) {
     console.log("Clicked coords in parent:", guessCoords.value)
 }
 
+function clamp(number, min, max) {
+    return Math.max(min, Math.min(number, max));
+}
 </script>
 
 <template>
@@ -95,7 +125,9 @@ function handleMapClick(coords) {
             </NavBar>
         </div>
         <MapBar>
-            <Map @map-click="handleMapClick" ref="mapRef" :class="{ 'fullscreen-map': isFullscreen, 'map': !isFullscreen }"/>
+            <div :class="{ 'fullscreen-wrapper': isFullscreen, 'normal-wrapper': !isFullscreen }">
+                <Map @map-click="handleMapClick" ref="mapRef"/>
+            </div>
             <NavBar class="guess-bar">
                 <NavItem
                     class="guess-item"
@@ -115,10 +147,21 @@ function handleMapClick(coords) {
                 </NavItem>
             </NavBar>
         </MapBar>
+        <NavBar :class="{ 'fullscreen-bar': isFullscreen, 'not-fullscreen-bar': !isFullscreen }" class="stats-navbar">
+            <NavItem>Distance: {{ Math.round(distance) }} blocks</NavItem>
+            <NavItem>Points: {{ points }}</NavItem>
+            <NavItem>Round: {{ round }}/5</NavItem>
+        </NavBar>
     </MapImage>
 </template>
 
 <style scoped>
+
+.stats-navbar {
+    position: absolute;
+    bottom: 0;
+}
+
 .fullscreen-bar {
     opacity: 1 !important;
     z-index: 10000 !important;
@@ -128,18 +171,41 @@ function handleMapClick(coords) {
     z-index: -9999;
 }
 
-.fullscreen-map {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 9999 !important;
-    border-radius: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    opacity: 1 !important;
-    transition: none !important;
+.normal-wrapper {
+    opacity: 0.5;
+    width: 100%;
+    height: 300px;
+    position: relative;
+    overflow: hidden;
+    display: block;
+    margin: 5px 5px 0 5px;
+    border-radius: 12px;
+    bottom: 0;
+    right: 0;
+    transition:
+        opacity 0.2s ease,
+        width 0.2s ease,
+        height 0.2s ease;
+}
+
+.normal-wrapper:hover {
+    opacity: 1;
+    height: 500px;
+    width: 200%;
+    transition-delay: 0s, 0s, 0s;
+}
+
+.normal-wrapper:not(:hover) {
+    transition-delay: 0s, 0.2s, 0.2s;
+}
+
+.fullscreen-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
 }
 
 .navtopbar-list {
@@ -172,5 +238,4 @@ function handleMapClick(coords) {
     opacity: 0.5;
     background-color: #888;
 }
-
 </style>

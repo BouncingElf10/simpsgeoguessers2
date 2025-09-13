@@ -7,6 +7,7 @@
     }>()
     let map = ref<L.Map>()
     let guessMarker = ref<L.Marker>()
+    const imageBounds = [[0, 0], [1544, 1555]]
 
     onMounted(() => {
         map.value = L.map("map", {
@@ -17,9 +18,8 @@
             zoom: 0,
         })
         const imageUrl = new URL(`../assets/map.png`, import.meta.url).href
-        const imageBounds = [[0, 0], [1544, 1555]]
-        L.imageOverlay(imageUrl, imageBounds).addTo(map.value)
 
+        L.imageOverlay(imageUrl, imageBounds).addTo(map.value)
         map.value.fitBounds(imageBounds)
 
         map.value.on("zoomend", () => {
@@ -56,10 +56,7 @@
 
     function showCorrectMarker(correctGuess, actualGuess) {
         console.log("Correct guess:", correctGuess)
-        L.marker({
-            lat: correctGuess.y,
-            lng: correctGuess.x
-        }).addTo(map.value!)
+        L.circle([correctGuess.y, correctGuess.x], {radius: 3, color: "red", weight: 3}).addTo(map.value!);
         L.polyline(
             [[actualGuess.y, actualGuess.x], [correctGuess.y, correctGuess.x]],
             { color: "red", weight: 3}
@@ -68,7 +65,20 @@
         map.value!.fitBounds(bounds, { padding: [50, 50], maxZoom: 4 });
     }
 
-    defineExpose({ showCorrectMarker })
+    function clearMap() {
+        map.value?.eachLayer((layer) => {
+            if (layer instanceof L.TileLayer || layer instanceof L.ImageOverlay) return;
+            map.value?.removeLayer(layer);
+        });
+        guessMarker.value = undefined;
+    }
+
+    function defaultBounds() {
+        map.value!.fitBounds(imageBounds, { padding: [50, 50], maxZoom: 4 });
+    }
+
+
+    defineExpose({ showCorrectMarker, clearMap, defaultBounds })
 </script>
 
 <template>
@@ -79,29 +89,8 @@
 
 <style scoped>
 .map {
-    opacity: 0.5;
     background-color: #000000;
+    height: 100%;
     width: 100%;
-    height: 300px;
-    display: block;
-    margin: 5px 5px 0 5px;
-    border-radius: 12px;
-    bottom: 0;
-    right: 0;
-    transition:
-        opacity 0.2s ease,
-        width 0.2s ease,
-        height 0.2s ease;
-}
-
-.map:hover {
-    opacity: 1;
-    height: 500px;
-    width: 200%;
-    transition-delay: 0s, 0s, 0s;
-}
-
-.map:not(:hover) {
-    transition-delay: 0s, 0.2s, 0.2s;
 }
 </style>

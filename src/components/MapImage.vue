@@ -35,5 +35,9 @@
     background-repeat: no-repeat;
     display: flex;
     flex-direction: row;
+    background-color: #202020;
 }
+
+body {  }
+
 </style>
