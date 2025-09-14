@@ -37,6 +37,7 @@ const timer = ref(0)
 const hasTimer = ref(true)
 const tenSecondsLeft = ref(false)
 const countdown = ref(0)
+const countdownTimeSeconds = ref(3)
 let intervalId = null
 let endTime = null
 
@@ -61,8 +62,8 @@ function startGame() {
 
 function continueGame() {
     restartTimer()
-    if (hasTimer) {
-        startCountdown(3)
+    if (hasTimer.value) {
+        startCountdown(countdownTimeSeconds.value)
     }
     if (isFinished.value) {
         gameFinished.value = true;
@@ -71,7 +72,9 @@ function continueGame() {
         }
         mapRef.value.clearMap()
         mapRef.value.showAllMarkers(guessHistory.value, maxRounds)
-        mapRef.value.defaultBounds()
+        setTimeout(() => {
+            mapRef.value.defaultBounds()
+        }, 50);
 
         continueButonName.value = "Restart"
         return;
@@ -130,6 +133,7 @@ function placedGuess() {
 function startCountdown(seconds) {
     countdown.value = seconds
     const interval = setInterval(() => {
+        console.log("Countdown: ", countdown.value)
         countdown.value--
         if (countdown.value <= 0) {
             clearInterval(interval)
@@ -186,10 +190,14 @@ function finalGuessTime(seconds) {
 }
 
 function calculatePoints(currentCoords, guessCoords) {
-    const xDiff = Math.abs(currentCoords.x - guessCoords.x)
-    const yDiff = Math.abs(currentCoords.y - guessCoords.y)
-    distance.value = Math.sqrt(xDiff * xDiff + yDiff * yDiff)
-    points.value = clamp(Math.round(100 - (distance.value / 100) * 100), 0, 100)
+    const xDiff = currentCoords.x - guessCoords.x;
+    const yDiff = currentCoords.y - guessCoords.y;
+    distance.value = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+    if (distance.value <= 10) {
+        points.value = 100;
+    } else {
+        points.value = Math.max(0, Math.floor(100 - distance.value));
+    }
 }
 
 function getRandomPlace() {
@@ -222,7 +230,7 @@ function clamp(number, min, max) {
                :class="[tenSecondsLeft && gameStarted && !gameFinished ? 'vignette' : 'vignette-out']">
         <div
             class="map-blur"
-            :class="{ active: countdown > 0 && gameStarted && !gameFinished }">
+            :class="{ active: (countdown > 0 && gameStarted && !gameFinished), activesmooth: timer <= 0}">
         </div>
         <div class="navbar-list">
             <NavBar>
@@ -250,12 +258,17 @@ function clamp(number, min, max) {
             </div>
             <NavBar class="guess-bar">
                 <NavItem
-                    @click="placedGuess"
-                    :class="{ disabled: !guessCoords.x && !guessCoords.y, 'guess-item': !hasTimer, 'guess-item-timer': hasTimer }"
-                    :disabled="!guessCoords.x && !guessCoords.y">
+                    :class="{disabled: (!guessCoords.x && !guessCoords.y) || countdown > 0,
+                        'guess-item': !hasTimer || timer <= 0,
+                        'guess-item-timer': hasTimer && timer > 0
+                    }"
+                    @click="() => {
+                        if ((!guessCoords.x && !guessCoords.y) || countdown > 0) return;
+                        placedGuess();
+                    }">
                     Guess
                 </NavItem>
-                <NavItem class="timer-item" v-if="hasTimer">
+                <NavItem class="timer-item" v-if="hasTimer && timer > 0 ">
                     <span v-if="countdown > 0">{{ countdown }}</span>
                     <span v-else>{{ formatTime(timer) }}</span>
                 </NavItem>
@@ -338,7 +351,12 @@ function clamp(number, min, max) {
     height: 100%;
     pointer-events: none;
     backdrop-filter: blur(0px);
-    transition: backdrop-filter 0.5s ease; /* smooth fade-out */
+    transition: backdrop-filter 0.5s ease;
+}
+
+.map-blur.activesmooth {
+    backdrop-filter: blur(45px);
+    transition: backdrop-filter 0.5s ease;
 }
 
 .map-blur.active {
