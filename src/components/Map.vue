@@ -112,7 +112,7 @@
         locked.value = shouldLock
     }
 
-    defineExpose({ showCorrectMarker, clearMap, defaultBounds, showAllMarkers, lockMap })
+    defineExpose({ showCorrectMarker, clearMap, defaultBounds, showAllMarkers, lockMap, getColorFromRound})
 </script>
 
 <template>

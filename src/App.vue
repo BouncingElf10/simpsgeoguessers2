@@ -26,18 +26,21 @@ const currentId = ref(0)
 const currentPlaceName = ref("")
 const round = ref(0)
 const points = ref(0)
+const totalPoints = ref(0);
 const distance = ref(0)
 const maxRounds = 5;
 
 const isFullscreen = ref(false);
 const isFinished = ref(false);
 const gameStarted = ref(false);
+const gameFinished = ref(false);
 
 function startGame() {
     gameStarted.value = true;
     mapRef.value.lockMap(false)
     isFullscreen.value = false;
     isFinished.value = false;
+    gameFinished.value = false;
     mapRef.value.clearMap()
     mapRef.value.defaultBounds()
     continueButonName.value = "Continue"
@@ -48,11 +51,14 @@ function startGame() {
 
 function continueGame() {
     if (isFinished.value) {
+        gameFinished.value = true;
         if (continueButonName.value === "Restart") {
             startGame()
         }
         mapRef.value.clearMap()
         mapRef.value.showAllMarkers(guessHistory.value, maxRounds)
+        mapRef.value.defaultBounds()
+
         continueButonName.value = "Restart"
         return;
     }
@@ -85,11 +91,15 @@ function placedGuess() {
     }
 
     calculatePoints(alignedCurrentCoords, alignedGuessCoords)
+    totalPoints.value += points.value;
     guessHistory.value.push({
         guessCoords: alignedGuessCoords,
         currentCoords: alignedCurrentCoords,
-        points: points,
-        round: round.value})
+        points: points.value,
+        distance: distance.value,
+        round: round.value,
+        roundColor: mapRef.value.getColorFromRound(round.value, maxRounds)
+    })
 
     setTimeout(() => {
         mapRef.value.showCorrectMarker(alignedCurrentCoords, alignedGuessCoords, round.value, maxRounds);
@@ -177,11 +187,33 @@ function clamp(number, min, max) {
                 </NavItem>
             </NavBar>
         </MapBar>
-        <NavBar :class="{ 'fullscreen-bar': isFullscreen, 'not-fullscreen-bar': !isFullscreen }" class="stats-navbar">
+        <NavBar :class="{ 'fullscreen-bar': isFullscreen, 'not-fullscreen-bar': !isFullscreen }" class="stats-navbar" v-if="!gameFinished">
             <NavItem>Distance: {{ Math.round(distance) }} blocks</NavItem>
             <NavItem>Points: {{ points }}</NavItem>
             <NavItem>Round: {{ round }}/5</NavItem>
         </NavBar>
+        <InfoComponent class="end-stats" v-if="gameFinished">
+            <InfoText variant="title">Game Over!</InfoText>
+            <InfoText variant="body">
+                Final Score: <strong>{{ totalPoints }}</strong> / {{ maxRounds * 100 }}
+            </InfoText>
+
+            <div class="guess-history">
+                <InfoText variant="subtitle">Your Guesses</InfoText>
+                <ul>
+                    <li v-for="(guess, index) in guessHistory" :key="index">
+                        <span :style="{ color: guess.roundColor }">
+                            Round {{ guess.round }}
+                        </span>:
+                        <strong>{{ guess.points }} pts</strong>, Distance: {{ Math.round(guess.distance) }} blocks
+                    </li>
+                </ul>
+            </div>
+
+            <NavBar class="restart-bar">
+                <NavItem class="guess-item" @click="startGame">Restart Game</NavItem>
+            </NavBar>
+        </InfoComponent>
         <InfoComponent class="starter-info" v-if="!gameStarted">
             <InfoText variant="title">Welcome to Simps Geoguesser Season 2!</InfoText>
             <InfoText variant="body" class="credits">
@@ -195,6 +227,22 @@ function clamp(number, min, max) {
 </template>
 
 <style scoped>
+.restart-bar {
+    position: absolute;
+    bottom: 13px;
+    width: calc(100% - 15px * 3.5);
+}
+
+.end-stats {
+    position: absolute;
+    left: 0;
+    margin: 15px;
+    z-index: 20000;
+    height: calc(100% - 15px * 4);
+    width: 30%;
+    padding: 15px;
+}
+
 .start-bar {
     bottom: 0;
     position: absolute;
