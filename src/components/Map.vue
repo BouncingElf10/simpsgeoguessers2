@@ -8,6 +8,7 @@
     let map = ref<L.Map>()
     let guessMarker = ref<L.Marker>()
     const imageBounds = [[0, 0], [1544, 1555]]
+    const locked = ref(true)
 
     onMounted(() => {
         map.value = L.map("map", {
@@ -44,6 +45,9 @@
         }
 
         function onMapClick(e) {
+            if (locked.value) {
+                return;
+            }
             if (guessMarker.value) {
                 guessMarker.value.setLatLng(e.latlng)
             } else {
@@ -54,12 +58,32 @@
         map.value.on("click", onMapClick)
     })
 
-    function showCorrectMarker(correctGuess, actualGuess) {
-        console.log("Correct guess:", correctGuess)
-        L.circle([correctGuess.y, correctGuess.x], {radius: 3, color: "red", weight: 3}).addTo(map.value!);
+    function getColorFromRound(round: number, maxRounds: number): string {
+        if (!maxRounds || isNaN(round) || isNaN(maxRounds)) {
+            return "hsl(0, 0%, 50%)";
+        }
+        const ratio = Math.max(0, Math.min(1, round / maxRounds));
+        const hue = ratio * 360;
+        return `hsl(${hue}, 100%, 50%)`;
+    }
+
+    function showCorrectMarker(correctGuess, actualGuess, round: number, maxRound: number) {
+        const color = getColorFromRound(round, maxRound);
+        const flagIcon = L.divIcon({
+            html: `
+                    <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 0v28" stroke="black" stroke-width="3.5" fill="none"/>
+                        <path d="M8 2h14l-2 6 2 6H8" stroke="black" stroke-width="2" fill="${color}"/>
+                    </svg>
+                `,
+            className: "",
+            iconSize: [32, 32],
+            iconAnchor: [6, 28],
+        });
+        L.marker([correctGuess.y, correctGuess.x], { icon: flagIcon }).addTo(map.value!);
         L.polyline(
             [[actualGuess.y, actualGuess.x], [correctGuess.y, correctGuess.x]],
-            { color: "red", weight: 3}
+            { color, weight: 3 }
         ).addTo(map.value!);
         const bounds = L.latLngBounds([[actualGuess.y, actualGuess.x], [correctGuess.y, correctGuess.x]]);
         map.value!.fitBounds(bounds, { padding: [50, 50], maxZoom: 4 });
@@ -77,8 +101,18 @@
         map.value!.fitBounds(imageBounds, { padding: [50, 50], maxZoom: 4 });
     }
 
+    function showAllMarkers(guessHistory, maxRounds: number,) {
+        for (const guess of guessHistory) {
+            L.marker([guess.guessCoords.y, guess.guessCoords.x]).addTo(map.value!)
+            showCorrectMarker(guess.currentCoords, guess.guessCoords, guess.round, maxRounds)
+        }
+    }
 
-    defineExpose({ showCorrectMarker, clearMap, defaultBounds })
+    function lockMap(shouldLock: boolean) {
+        locked.value = shouldLock
+    }
+
+    defineExpose({ showCorrectMarker, clearMap, defaultBounds, showAllMarkers, lockMap })
 </script>
 
 <template>

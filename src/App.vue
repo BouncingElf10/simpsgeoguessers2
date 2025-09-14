@@ -8,6 +8,8 @@ import MapImage from "@/components/MapImage.vue";
 import Icon from "@/assets/internal/returnarrow.svg";
 import PlacesJson from "@/assets/places.json";
 import Map from "@/components/Map.vue";
+import InfoComponent from "@/components/InfoComponent.vue";
+import InfoText from "@/components/InfoText.vue";
 
 const mapImageRef = ref(null);
 const mapRef = ref(null);
@@ -17,6 +19,7 @@ const offset = {x: 796 - 169, y: 656 - 48}
 
 const guessHistory = ref([])
 
+const continueButonName = ref("Continue")
 const currentCoords = ref({})
 const guessCoords = ref({})
 const currentId = ref(0)
@@ -24,17 +27,36 @@ const currentPlaceName = ref("")
 const round = ref(0)
 const points = ref(0)
 const distance = ref(0)
+const maxRounds = 5;
 
 const isFullscreen = ref(false);
-
+const isFinished = ref(false);
+const gameStarted = ref(false);
 
 function startGame() {
+    gameStarted.value = true;
+    mapRef.value.lockMap(false)
+    isFullscreen.value = false;
+    isFinished.value = false;
+    mapRef.value.clearMap()
+    mapRef.value.defaultBounds()
+    continueButonName.value = "Continue"
     round.value = 0;
     guessHistory.value = [];
     continueGame()
 }
 
 function continueGame() {
+    if (isFinished.value) {
+        if (continueButonName.value === "Restart") {
+            startGame()
+        }
+        mapRef.value.clearMap()
+        mapRef.value.showAllMarkers(guessHistory.value, maxRounds)
+        continueButonName.value = "Restart"
+        return;
+    }
+    mapRef.value.lockMap(false)
     getRandomPlace()
     round.value++
     mapRef.value.clearMap()
@@ -44,15 +66,11 @@ function continueGame() {
     }, 50);
     guessCoords.value = {}
     mapRef.value.defaultBounds()
-    guessHistory.value.push({
-        guessCoords: guessCoords.value,
-        currentCoords: currentCoords.value,
-        points: points,
-        round: round.value})
 }
 
 function placedGuess() {
     isFullscreen.value = true;
+    mapRef.value.lockMap(true)
     if (!currentCoords.value?.x || !currentCoords.value?.y) {
         console.warn("No current place selected yet");
         return;
@@ -65,10 +83,22 @@ function placedGuess() {
         x: guessCoords.value.x + offset.x,
         y: (offset.y - guessCoords.value.y) - alignmentData.mcY * 2
     }
-    setTimeout(() => {
-        mapRef.value.showCorrectMarker(alignedCurrentCoords, alignedGuessCoords);
-    }, 50);
+
     calculatePoints(alignedCurrentCoords, alignedGuessCoords)
+    guessHistory.value.push({
+        guessCoords: alignedGuessCoords,
+        currentCoords: alignedCurrentCoords,
+        points: points,
+        round: round.value})
+
+    setTimeout(() => {
+        mapRef.value.showCorrectMarker(alignedCurrentCoords, alignedGuessCoords, round.value, maxRounds);
+    }, 50);
+
+    if (round.value >= maxRounds) {
+        isFinished.value = true;
+        continueButonName.value = "Finish"
+    }
 }
 
 function calculatePoints(currentCoords, guessCoords) {
@@ -143,7 +173,7 @@ function clamp(number, min, max) {
                 <NavItem
                     class="guess-item"
                     @click="continueGame">
-                    Continue
+                    {{ continueButonName }}
                 </NavItem>
             </NavBar>
         </MapBar>
@@ -152,10 +182,56 @@ function clamp(number, min, max) {
             <NavItem>Points: {{ points }}</NavItem>
             <NavItem>Round: {{ round }}/5</NavItem>
         </NavBar>
+        <InfoComponent class="starter-info" v-if="!gameStarted">
+            <InfoText variant="title">Welcome to Simps Geoguesser Season 2!</InfoText>
+            <InfoText variant="body" class="credits">
+                Developed by: <a href="https://github.com/BouncingElf10">BouncingElf10</a>  |  Images taken by: <a href="https://www.youtube.com/@tj_giggles/videos">TJ_Giggles</a>
+            </InfoText>
+            <NavBar class="start-bar">
+                <NavItem class="guess-item" @click="startGame">Start Game</NavItem>
+            </NavBar>
+        </InfoComponent>
     </MapImage>
 </template>
 
 <style scoped>
+.start-bar {
+    bottom: 0;
+    position: absolute;
+    width: calc(100% - 15px * 3);
+    margin: 15px;
+    justify-content: center;
+}
+
+.credits a {
+    color: #4da6ff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.credits a:hover {
+    color: #82c6ff;
+    text-decoration: underline;
+}
+
+.starter-info {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 40%;
+    height: 40%;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 30px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 
 .stats-navbar {
     position: absolute;
