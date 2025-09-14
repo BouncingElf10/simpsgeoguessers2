@@ -13,6 +13,7 @@
 
     const imageBounds = [[0, 0], [1544, 1555]]
     const locked = ref(true)
+    const mousePos = ref({x: 0, y: 0})
 
     onMounted(() => {
         map.value = L.map("map", {
@@ -42,6 +43,7 @@
                     x: e.latlng.lng - offset.x,
                     y: (offset.y - e.latlng.lat) + alignmentData.mcY * 2,
                 }
+                mousePos.value = e.latlng
                 coordsDiv.innerHTML = `x: ${alignedCoords.x.toFixed(0)}, y: ${alignedCoords.y.toFixed(0)}`
             }
         })
@@ -135,7 +137,19 @@
         locked.value = shouldLock
     }
 
-    defineExpose({ showCorrectMarker, clearMap, defaultBounds, showAllMarkers, lockMap, getColorFromRound})
+    function showTempMarker(coords) {
+        if (guessMarker.value) {
+            guessMarker.value.setLatLng([coords.lat, coords.lng])
+        } else {
+            guessMarker.value = L.marker([coords.lat, coords.lng]).addTo(map.value!)
+        }
+    }
+
+    function getMousePos() {
+        return mousePos.value
+    }
+
+    defineExpose({ showCorrectMarker, clearMap, defaultBounds, showAllMarkers, lockMap, getColorFromRound, showTempMarker, getMousePos})
 </script>
 
 <template>

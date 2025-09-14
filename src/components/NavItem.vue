@@ -15,7 +15,7 @@
     color: #ffffff;
     background: rgba(66, 66, 66, 0.44);
     border: 2px solid rgba(66, 66, 66, 0.44);
-    border-radius: 12px;
+    border-radius: 7px;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);

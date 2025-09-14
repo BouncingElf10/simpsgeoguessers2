@@ -1,5 +1,5 @@
 <script setup>
-import {nextTick, ref} from "vue";
+import {nextTick, onMounted, onUnmounted, ref} from "vue";
 
 import NavBar from "@/components/NavBar.vue";
 import NavItem from "@/components/NavItem.vue";
@@ -30,10 +30,13 @@ const currentPlaceName = ref("")
 const round = ref(0)
 const points = ref(0)
 const totalPoints = ref(0);
+const score = ref(0);
+const totalScore = ref(0);
 const distance = ref(0)
 const maxRounds = 5;
 const timeToGuessSeconds = 14;
 const timer = ref(0)
+const totalTimeTaken = ref(0)
 const hasTimer = ref(true)
 const tenSecondsLeft = ref(false)
 const countdown = ref(0)
@@ -46,6 +49,7 @@ const isFullscreen = ref(false);
 const isFinished = ref(false);
 const gameStarted = ref(false);
 const gameFinished = ref(false);
+const hasGuessedThisRound = ref(false);
 
 function startGame() {
     resetCountdown()
@@ -90,10 +94,13 @@ function continueGame() {
         mapRef.value?.invalidateSize?.()
     }, 50);
     guessCoords.value = {}
+    hasGuessedThisRound.value = false;
     mapRef.value.defaultBounds()
 }
 
 function placedGuess() {
+    if (hasGuessedThisRound.value) { return; }
+    hasGuessedThisRound.value = true;
     pauseTimer()
     isFullscreen.value = true;
     mapRef.value.lockMap(true)
@@ -109,15 +116,18 @@ function placedGuess() {
         x: guessCoords.value.x + offset.x,
         y: (offset.y - guessCoords.value.y) - alignmentData.mcY * 2
     }
-
-    calculatePoints(alignedCurrentCoords, alignedGuessCoords)
+    const timeTaken = timeToGuessSeconds - timer.value;
+    calculatePoints(alignedCurrentCoords, alignedGuessCoords, timeTaken);
     totalPoints.value += points.value;
+    totalScore.value += score.value;
+    totalTimeTaken.value += timeTaken;
     guessHistory.value.push({
         guessCoords: alignedGuessCoords,
         currentCoords: alignedCurrentCoords,
         points: points.value,
         distance: distance.value,
         time: timer.value,
+        score: score.value,
         round: round.value,
         roundColor: mapRef.value.getColorFromRound(round.value, maxRounds)
     })
@@ -135,7 +145,6 @@ function placedGuess() {
 function startCountdown(seconds) {
     countdown.value = seconds
     countdownInterval = setInterval(() => {
-        console.log("Countdown: ", countdown.value)
         countdown.value--
         if (countdown.value <= 0) {
             clearInterval(countdownInterval)
@@ -199,7 +208,7 @@ function finalGuessTime(seconds) {
     return timeTaken.toFixed(3)
 }
 
-function calculatePoints(currentCoords, guessCoords) {
+function calculatePoints(currentCoords, guessCoords, timeTaken) {
     const xDiff = currentCoords.x - guessCoords.x;
     const yDiff = currentCoords.y - guessCoords.y;
     distance.value = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
@@ -207,6 +216,12 @@ function calculatePoints(currentCoords, guessCoords) {
         points.value = 100;
     } else {
         points.value = Math.max(0, Math.floor(100 - distance.value));
+    }
+    const maxBonus = 2;
+    const bonus = 1 + (maxBonus - 1) * Math.exp(-timeTaken);
+    score.value = points.value * bonus / 2;
+    if (score.value > 90) {
+        score.value = -1;
     }
 }
 
@@ -227,12 +242,38 @@ function handleMapClick(coords) {
         x: Math.floor(coords.x) - offset.x,
         y: (offset.y - Math.floor(coords.y)) - alignmentData.mcY * 2
     }
-    console.log("Clicked coords in parent:", guessCoords.value)
 }
 
-function clamp(number, min, max) {
-    return Math.max(min, Math.min(number, max));
+function handleKeydown(e) {
+    if (e.code === "Space") {
+        e.preventDefault();
+        if (countdown.value > 0 || gameFinished.value) return;
+
+        if (!guessCoords.value.x && !guessCoords.value.y) {
+            const mouse = mapRef.value.getMousePos();
+            if (!mouse || isNaN(mouse.lat) || isNaN(mouse.lng)) {
+                console.warn("Mouse position not available yet");
+                return;
+            }
+            guessCoords.value = {
+                x: Math.floor(mouse.lng) - offset.x,
+                y: (offset.y - Math.floor(mouse.lat)) - alignmentData.mcY * 2
+            };
+            mapRef.value.showTempMarker(mouse);
+        } else {
+            placedGuess();
+        }
+    }
 }
+
+
+onMounted(() => {
+    window.addEventListener("keydown", handleKeydown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener("keydown", handleKeydown);
+});
 </script>
 
 <template>
@@ -299,12 +340,15 @@ function clamp(number, min, max) {
         <NavBar :class="{ 'fullscreen-bar': isFullscreen, 'not-fullscreen-bar': !isFullscreen }" class="stats-navbar" v-if="!gameFinished">
             <NavItem>Distance: {{ Math.round(distance) }} blocks</NavItem>
             <NavItem>Points: {{ points }}</NavItem>
+            <NavItem>Score: {{ score.toFixed(2) }}</NavItem>
             <NavItem>Round: {{ round }}/5</NavItem>
         </NavBar>
         <InfoComponent class="end-stats" v-if="gameFinished">
             <InfoText variant="title">Game Over!</InfoText>
             <InfoText variant="body">
-                Final Score: <strong>{{ totalPoints }}</strong> / {{ maxRounds * 100 }}
+                Total Points: <strong>{{ totalPoints }}</strong> / {{ maxRounds * 100 }} <br>
+                Total Time Taken: <strong>{{ totalTimeTaken.toFixed(2) }}</strong> seconds <br>
+                Total Score: <strong>{{ totalScore.toFixed(2) }}</strong>
             </InfoText>
 
             <div class="guess-history">
@@ -315,7 +359,13 @@ function clamp(number, min, max) {
                             Round {{ guess.round }}
                         </span>:
                         <strong>{{ guess.points }} pts</strong>, Distance: {{ Math.round(guess.distance) }} blocks, in {{ finalGuessTime(guess.time) }} seconds
+                        <br> &nbsp; &nbsp; &nbsp; &nbsp;
+                        <span v-if="guess.score === -1" style="color: red; font-weight: bold;">
+                            Guessing too fast!
+                        </span>
+                        <span v-else>Score: {{ guess.score.toFixed(2) }}</span>
                     </li>
+
                 </ul>
             </div>
 
