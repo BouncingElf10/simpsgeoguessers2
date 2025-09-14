@@ -7,6 +7,10 @@
     }>()
     let map = ref<L.Map>()
     let guessMarker = ref<L.Marker>()
+
+    const alignmentData = {mapX: 796, mapY: 656, mcX: 169, mcY: 48} // also in Map.vue
+    const offset = {x: 796 - 169, y: 656 - 48}
+
     const imageBounds = [[0, 0], [1544, 1555]]
     const locked = ref(true)
 
@@ -22,6 +26,26 @@
 
         L.imageOverlay(imageUrl, imageBounds).addTo(map.value)
         map.value.fitBounds(imageBounds)
+
+        const coordsControl = L.control({ position: "topright" })
+        coordsControl.onAdd = function () {
+            const div = L.DomUtil.create("div", "coords-display")
+            div.innerHTML = "x: -, y: -"
+            return div
+        }
+        coordsControl.addTo(map.value)
+
+        map.value.on("mousemove", (e) => {
+            const coordsDiv = document.querySelector(".coords-display")
+            if (coordsDiv) {
+                const alignedCoords = {
+                    x: e.latlng.lng - offset.x,
+                    y: (offset.y - e.latlng.lat) + alignmentData.mcY * 2,
+                }
+                coordsDiv.innerHTML = `x: ${alignedCoords.x.toFixed(0)}, y: ${alignedCoords.y.toFixed(0)}`
+            }
+        })
+
 
         map.value.on("zoomend", () => {
             const currentZoom = map.value.getZoom()
@@ -125,5 +149,27 @@
     background-color: #000000;
     height: 100%;
     width: 100%;
+}
+:deep(.coords-display) { /* ITS BEING USED */
+    width: auto;
+    display: flex;
+    color: #ffffff;
+    background: rgba(32, 32, 32, 0.44);
+    border: 2px solid rgba(32, 32, 32, 0.44);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    padding: 5px 10px;
+    justify-content: center;
+    align-items: center;
+    font-size: 15px;
+    font-family: "Barlow", sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    line-height: normal;
+    vertical-align: middle;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 </style>

@@ -17,7 +17,7 @@ import InfoText from "@/components/InfoText.vue";
 const mapImageRef = ref(null);
 const mapRef = ref(null);
 
-const alignmentData = {mapX: 796, mapY: 656, mcX: 169, mcY: 48}
+const alignmentData = {mapX: 796, mapY: 656, mcX: 169, mcY: 48} // also in Map.vue
 const offset = {x: 796 - 169, y: 656 - 48}
 
 const guessHistory = ref([])
@@ -38,7 +38,8 @@ const hasTimer = ref(true)
 const tenSecondsLeft = ref(false)
 const countdown = ref(0)
 const countdownTimeSeconds = ref(3)
-let intervalId = null
+let countdownInterval = null
+let timerInterval = null
 let endTime = null
 
 const isFullscreen = ref(false);
@@ -47,6 +48,7 @@ const gameStarted = ref(false);
 const gameFinished = ref(false);
 
 function startGame() {
+    resetCountdown()
     gameStarted.value = true;
     mapRef.value.lockMap(false)
     isFullscreen.value = false;
@@ -132,7 +134,7 @@ function placedGuess() {
 
 function startCountdown(seconds) {
     countdown.value = seconds
-    const interval = setInterval(() => {
+    countdownInterval = setInterval(() => {
         console.log("Countdown: ", countdown.value)
         countdown.value--
         if (countdown.value <= 0) {
@@ -142,27 +144,35 @@ function startCountdown(seconds) {
     }, 1000)
 }
 
+function resetCountdown() {
+    if (countdownInterval) {
+        clearInterval(countdownInterval)
+        countdownInterval = null
+    }
+    countdown.value = 0
+}
+
 function startTimer() {
-    if (intervalId) return
+    if (timerInterval) return
 
     endTime = performance.now() + timeToGuessSeconds * 1000
 
-    intervalId = setInterval(() => {
+    timerInterval = setInterval(() => {
         const now = performance.now()
         const remaining = Math.max(0, (endTime - now) / 1000)
         timer.value = remaining
 
         if (remaining <= 0) {
-            clearInterval(intervalId)
-            intervalId = null
+            clearInterval(timerInterval)
+            timerInterval = null
         }
     }, 16)
 }
 
 function pauseTimer() {
-    if (intervalId) {
-        clearInterval(intervalId)
-        intervalId = null
+    if (timerInterval) {
+        clearInterval(timerInterval)
+        timerInterval = null
         endTime = performance.now() + timer.value * 1000
     }
 }
