@@ -38,6 +38,4 @@
     background-color: #202020;
 }
 
-body {  }
-
 </style>

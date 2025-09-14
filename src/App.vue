@@ -5,7 +5,10 @@ import NavBar from "@/components/NavBar.vue";
 import NavItem from "@/components/NavItem.vue";
 import MapBar from "@/components/MapBar.vue";
 import MapImage from "@/components/MapImage.vue";
-import Icon from "@/assets/internal/returnarrow.svg";
+import ReturnIcon from "@/assets/internal/returnarrow.svg";
+import LayersIcon from "@/assets/internal/layers.svg";
+import LeaderboardIcon from "@/assets/internal/leaderboard.svg";
+import SettingsIcon from "@/assets/internal/settings.svg";
 import PlacesJson from "@/assets/places.json";
 import Map from "@/components/Map.vue";
 import InfoComponent from "@/components/InfoComponent.vue";
@@ -29,6 +32,13 @@ const points = ref(0)
 const totalPoints = ref(0);
 const distance = ref(0)
 const maxRounds = 5;
+const timeToGuessSeconds = 14;
+const timer = ref(0)
+const hasTimer = ref(true)
+const tenSecondsLeft = ref(false)
+const countdown = ref(0)
+let intervalId = null
+let endTime = null
 
 const isFullscreen = ref(false);
 const isFinished = ref(false);
@@ -50,6 +60,10 @@ function startGame() {
 }
 
 function continueGame() {
+    restartTimer()
+    if (hasTimer) {
+        startCountdown(3)
+    }
     if (isFinished.value) {
         gameFinished.value = true;
         if (continueButonName.value === "Restart") {
@@ -75,6 +89,7 @@ function continueGame() {
 }
 
 function placedGuess() {
+    pauseTimer()
     isFullscreen.value = true;
     mapRef.value.lockMap(true)
     if (!currentCoords.value?.x || !currentCoords.value?.y) {
@@ -97,6 +112,7 @@ function placedGuess() {
         currentCoords: alignedCurrentCoords,
         points: points.value,
         distance: distance.value,
+        time: timer.value,
         round: round.value,
         roundColor: mapRef.value.getColorFromRound(round.value, maxRounds)
     })
@@ -109,6 +125,64 @@ function placedGuess() {
         isFinished.value = true;
         continueButonName.value = "Finish"
     }
+}
+
+function startCountdown(seconds) {
+    countdown.value = seconds
+    const interval = setInterval(() => {
+        countdown.value--
+        if (countdown.value <= 0) {
+            clearInterval(interval)
+            restartTimer()
+        }
+    }, 1000)
+}
+
+function startTimer() {
+    if (intervalId) return
+
+    endTime = performance.now() + timeToGuessSeconds * 1000
+
+    intervalId = setInterval(() => {
+        const now = performance.now()
+        const remaining = Math.max(0, (endTime - now) / 1000)
+        timer.value = remaining
+
+        if (remaining <= 0) {
+            clearInterval(intervalId)
+            intervalId = null
+        }
+    }, 16)
+}
+
+function pauseTimer() {
+    if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+        endTime = performance.now() + timer.value * 1000
+    }
+}
+
+function restartTimer() {
+    pauseTimer()
+    timer.value = timeToGuessSeconds
+    startTimer()
+}
+
+function formatTime(seconds) {
+    tenSecondsLeft.value = seconds < 10
+    if (seconds > 10) {
+        const mins = Math.floor(seconds / 60)
+        const secs = Math.floor(seconds % 60)
+        return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
+    } else {
+        return seconds.toFixed(2)
+    }
+}
+
+function finalGuessTime(seconds) {
+    const timeTaken = timeToGuessSeconds - seconds
+    return timeTaken.toFixed(3)
 }
 
 function calculatePoints(currentCoords, guessCoords) {
@@ -144,24 +218,30 @@ function clamp(number, min, max) {
 </script>
 
 <template>
-    <MapImage :imageId="currentId" ref="mapImageRef">
+    <MapImage :imageId="currentId" ref="mapImageRef"
+               :class="[tenSecondsLeft && gameStarted && !gameFinished ? 'vignette' : 'vignette-out']">
+        <div
+            class="map-blur"
+            :class="{ active: countdown > 0 && gameStarted && !gameFinished }">
+        </div>
         <div class="navbar-list">
             <NavBar>
                 <NavItem @click="startGame">
-                    <Icon class="return-icon" width="32" height="32" />
+                    <ReturnIcon width="32" height="32"/>
                 </NavItem>
-            </NavBar>
-            <NavBar>
-                <NavItem>Second Item</NavItem>
-                <NavItem>Third Item</NavItem>
-                <NavItem>yeeah Item</NavItem>
             </NavBar>
         </div>
         <div class="navtopbar-list">
             <NavBar>
-                <NavItem>Second Item</NavItem>
-                <NavItem>Third Item</NavItem>
-                <NavItem>yeeah Item</NavItem>
+                <NavItem>
+                    <LeaderboardIcon width="32" height="32"/>
+                </NavItem>
+                <NavItem>
+                    <LayersIcon width="32" height="32"/>
+                </NavItem>
+                <NavItem>
+                    <SettingsIcon width="32" height="32"/>
+                </NavItem>
             </NavBar>
         </div>
         <MapBar>
@@ -170,20 +250,26 @@ function clamp(number, min, max) {
             </div>
             <NavBar class="guess-bar">
                 <NavItem
-                    class="guess-item"
                     @click="placedGuess"
-                    :class="{ disabled: !guessCoords.x && !guessCoords.y }"
+                    :class="{ disabled: !guessCoords.x && !guessCoords.y, 'guess-item': !hasTimer, 'guess-item-timer': hasTimer }"
                     :disabled="!guessCoords.x && !guessCoords.y">
                     Guess
+                </NavItem>
+                <NavItem class="timer-item" v-if="hasTimer">
+                    <span v-if="countdown > 0">{{ countdown }}</span>
+                    <span v-else>{{ formatTime(timer) }}</span>
                 </NavItem>
             </NavBar>
         </MapBar>
         <MapBar :class="{ 'fullscreen-bar': isFullscreen }" class="not-fullscreen-bar">
-            <NavBar class="guess-bar">
+            <NavBar class="guess-bar" v-if="!gameFinished">
                 <NavItem
                     class="guess-item"
                     @click="continueGame">
                     {{ continueButonName }}
+                </NavItem>
+                <NavItem class="timer-item" v-if="hasTimer">
+                    {{ formatTime(timer) }}
                 </NavItem>
             </NavBar>
         </MapBar>
@@ -205,7 +291,7 @@ function clamp(number, min, max) {
                         <span :style="{ color: guess.roundColor }">
                             Round {{ guess.round }}
                         </span>:
-                        <strong>{{ guess.points }} pts</strong>, Distance: {{ Math.round(guess.distance) }} blocks
+                        <strong>{{ guess.points }} pts</strong>, Distance: {{ Math.round(guess.distance) }} blocks, in {{ finalGuessTime(guess.time) }} seconds
                     </li>
                 </ul>
             </div>
@@ -227,6 +313,39 @@ function clamp(number, min, max) {
 </template>
 
 <style scoped>
+
+.map-wrapper img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vignette { /* THEY ARE BEING USED */
+    box-shadow: inset 0 0 200px rgba(255, 0, 0, 0.7);
+    transition: box-shadow 5s linear;
+}
+.vignette-out { /* THEY ARE BEING USED */
+    box-shadow: none !important;
+    transition: none !important;
+}
+
+.map-blur {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    backdrop-filter: blur(0px);
+    transition: backdrop-filter 0.5s ease; /* smooth fade-out */
+}
+
+.map-blur.active {
+    backdrop-filter: blur(45px);
+    transition: none;
+}
+
 .restart-bar {
     position: absolute;
     bottom: 13px;
@@ -346,15 +465,19 @@ function clamp(number, min, max) {
     position: absolute;
     align-items: flex-end;
 }
-.return-icon {
-    fill: white;
-}
+
 .guess-bar {
     margin-right: 5px;
     width: calc(100% - 15px);
 }
 .guess-item {
     width: 100%;
+}
+.guess-item-timer {
+    width: 70%;
+}
+.timer-item {
+    width: 30%;
 }
 .guess-item[disabled],
 .guess-item.disabled {
