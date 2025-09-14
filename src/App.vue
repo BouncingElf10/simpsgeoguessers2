@@ -138,7 +138,7 @@ function startCountdown(seconds) {
         console.log("Countdown: ", countdown.value)
         countdown.value--
         if (countdown.value <= 0) {
-            clearInterval(interval)
+            clearInterval(countdownInterval)
             restartTimer()
         }
     }, 1000)
