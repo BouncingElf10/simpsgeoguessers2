@@ -36,7 +36,7 @@ const score = ref(0);
 const totalScore = ref(0);
 const distance = ref(0)
 const maxRounds = ref(5);
-const timeToGuessSeconds = ref(14);
+const timeToGuessSeconds = ref(30);
 const timer = ref(0)
 const totalTimeTaken = ref(0)
 const hasTimer = ref(true)
@@ -55,6 +55,7 @@ const hasGuessedThisRound = ref(false);
 const showSettings = ref(false);
 
 const blinkMode = ref(false)
+const blinkActive = ref(false)
 const invertedMode = ref(false)
 const bwMode = ref(false)
 const pixelatedMode = ref(false)
@@ -171,9 +172,21 @@ function startCountdown(seconds) {
         countdown.value--
         if (countdown.value <= 0) {
             clearInterval(countdownInterval)
-            restartTimer()
+            if (blinkMode.value) {
+                flashMapImage()
+            } else {
+                restartTimer()
+            }
         }
     }, 1000)
+}
+
+function flashMapImage() {
+    blinkActive.value = true
+
+    setTimeout(() => {
+        blinkActive.value = false
+    }, 100)
 }
 
 function resetCountdown() {
@@ -190,7 +203,7 @@ function startTimer() {
     endTime = performance.now() + timeToGuessSeconds.value * 1000
     timerInterval = setInterval(() => {
         const now = performance.now()
-        const remaining = Math.max(0, (endTime - now) / 1000)
+        let remaining = Math.max(0, (endTime - now) / 1000)
         timer.value = remaining
 
         if (remaining <= 0) {
@@ -303,7 +316,7 @@ onUnmounted(() => {
                :class="[tenSecondsLeft && gameStarted && !gameFinished && hasTimer ? 'vignette' : 'vignette-out']">
         <div
             class="map-blur"
-            :class="{ active: (countdown > 0 && gameStarted && !gameFinished), activesmooth: timer <= 0}">
+            :class="{ active: (countdown > 0 && gameStarted && !gameFinished) || (!blinkActive && blinkMode), activesmooth: timer <= 0, 'no-transition': blinkActive}">
         </div>
         <div class="navbar-list">
             <NavBar>
@@ -368,12 +381,12 @@ onUnmounted(() => {
         <InfoComponent class="end-stats" v-if="gameFinished">
             <InfoText variant="title">Game Over!</InfoText>
             <InfoText variant="body">
-                Total Points: <strong>{{ totalPoints }}</strong> / {{ maxRounds.value * 100 }} <br>
+                Total Points: <strong>{{ totalPoints }}</strong> / {{ maxRounds * 100 }} <br>
                 Total Time Taken: <strong>{{ totalTimeTaken.toFixed(2) }}</strong> seconds <br>
                 Total Score: <strong>{{ totalScore.toFixed(2) }}</strong>
             </InfoText>
 
-            <div class="guess-history">
+            <div class="end-stats-text">
                 <InfoText variant="subtitle">Your Guesses</InfoText>
                 <ul>
                     <li v-for="(guess, index) in guessHistory" :key="index">
@@ -549,7 +562,9 @@ onUnmounted(() => {
     gap: 10px;
 }
 .settings-bar {
-    width: 100%;
+    width: calc(100% - 10px);
+    gap: 5px;
+    margin: 0;
     justify-content: center;
 }
 
@@ -576,6 +591,10 @@ onUnmounted(() => {
 }
 .vignette-out { /* THEY ARE BEING USED */
     box-shadow: none !important;
+    transition: none !important;
+}
+
+.no-transition {
     transition: none !important;
 }
 
@@ -617,9 +636,12 @@ onUnmounted(() => {
     left: 0;
     margin: 15px;
     z-index: 20000;
-    height: calc(100% - 15px * 4);
+    height: fit-content;
     width: 30%;
     padding: 15px;
+}
+.end-stats-text {
+    margin-bottom: 60px;
 }
 
 .start-bar {
