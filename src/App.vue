@@ -60,6 +60,7 @@ const bwMode = ref(false)
 const pixelatedMode = ref(false)
 const showLegal = ref(false)
 const showCredits = ref(false)
+
 function openLegal() {
     showLegal.value = true
     showSettings.value = false
@@ -187,7 +188,6 @@ function startTimer() {
     if (timerInterval) return
 
     endTime = performance.now() + timeToGuessSeconds.value * 1000
-
     timerInterval = setInterval(() => {
         const now = performance.now()
         const remaining = Math.max(0, (endTime - now) / 1000)
@@ -300,7 +300,7 @@ onUnmounted(() => {
 
 <template>
     <MapImage :imageId="currentId" ref="mapImageRef"
-               :class="[tenSecondsLeft && gameStarted && !gameFinished ? 'vignette' : 'vignette-out']">
+               :class="[tenSecondsLeft && gameStarted && !gameFinished && hasTimer ? 'vignette' : 'vignette-out']">
         <div
             class="map-blur"
             :class="{ active: (countdown > 0 && gameStarted && !gameFinished), activesmooth: timer <= 0}">
@@ -406,19 +406,27 @@ onUnmounted(() => {
         </InfoComponent>
         <transition name="fade">
             <InfoComponent v-if="showSettings" class="settings-menu">
-                <InfoText variant="title">Settings</InfoText>
+                <InfoText variant="title" class="settings-title">Settings</InfoText>
 
-                <SettingToggle v-model="hasTimer" label="Enable Timer" @update:modelValue="startGame" />
-                <SettingSlider v-model.number="countdownTimeSeconds" label="Countdown" :min="1" :max="10" @update:modelValue="startGame" />
-                <SettingSlider v-model.number="timeToGuessSeconds" label="Guess Time" :min="1" :max="60" @update:modelValue="startGame" />
+                <div class="settings-section">
+                    <InfoText variant="subtitle">Game Options</InfoText>
+                    <div class="settings-grid">
+                        <SettingToggle v-model="hasTimer" label="Enable Timer" @update:modelValue="startGame" />
+                        <SettingSlider v-model.number="countdownTimeSeconds" label="Countdown" :min="1" :max="10" @update:modelValue="startGame" />
+                        <SettingSlider v-model.number="timeToGuessSeconds" label="Guess Time" :min="1" :max="60" @update:modelValue="startGame" />
+                        <SettingSlider v-model.number="maxRounds" label="Rounds" :min="1" :max="20" @update:modelValue="startGame" />
+                    </div>
+                </div>
 
-                <SettingSlider v-model.number="maxRounds" label="Rounds" :min="1" :max="20" @update:modelValue="startGame" />
-
-                <InfoText variant="subtitle">Fun Modes</InfoText>
-                <SettingToggle v-model="blinkMode" label="Blink Mode" @update:modelValue="startGame" />
-                <SettingToggle v-model="invertedMode" label="Inverted Colors" @update:modelValue="startGame" />
-                <SettingToggle v-model="bwMode" label="Black & White" @update:modelValue="startGame" />
-                <SettingToggle v-model="pixelatedMode" label="Pixelated" @update:modelValue="startGame" />
+                <div class="settings-section">
+                    <InfoText variant="subtitle">Fun Modes</InfoText>
+                    <div class="settings-grid">
+                        <SettingToggle v-model="blinkMode" label="Blink Mode" @update:modelValue="startGame" />
+                        <SettingToggle v-model="invertedMode" label="Inverted Colors" @update:modelValue="startGame" />
+                        <SettingToggle v-model="bwMode" label="Black & White" @update:modelValue="startGame" />
+                        <SettingToggle v-model="pixelatedMode" label="Pixelated" @update:modelValue="startGame" />
+                    </div>
+                </div>
 
                 <div class="settings-actions">
                     <NavBar class="settings-bar">
@@ -432,25 +440,60 @@ onUnmounted(() => {
             </InfoComponent>
         </transition>
         <transition name="fade">
-            <InfoComponent v-if="showLegal" class="settings-menu">
+            <InfoComponent v-if="showSettings" class="settings-menu">
+                <InfoText variant="title" class="settings-title">Settings</InfoText>
+
+                <div class="settings-section">
+                    <InfoText variant="subtitle">Game Options</InfoText>
+                    <div class="settings-grid">
+                        <SettingToggle v-model="hasTimer" label="Enable Timer" @update:modelValue="startGame" />
+                        <SettingSlider v-model.number="countdownTimeSeconds" label="Countdown" :min="1" :max="10" @update:modelValue="startGame" />
+                        <SettingSlider v-model.number="timeToGuessSeconds" label="Guess Time" :min="1" :max="60" @update:modelValue="startGame" />
+                        <SettingSlider v-model.number="maxRounds" label="Rounds" :min="1" :max="20" @update:modelValue="startGame" />
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <InfoText variant="subtitle">Fun Modes</InfoText>
+                    <div class="settings-grid">
+                        <SettingToggle v-model="blinkMode" label="Blink Mode" @update:modelValue="startGame" />
+                        <SettingToggle v-model="invertedMode" label="Inverted Colors" @update:modelValue="startGame" />
+                        <SettingToggle v-model="bwMode" label="Black & White" @update:modelValue="startGame" />
+                        <SettingToggle v-model="pixelatedMode" label="Pixelated" @update:modelValue="startGame" />
+                    </div>
+                </div>
+
+                <div class="settings-actions">
+                    <NavBar class="settings-bar">
+                        <NavItem class="guess-item" @click="openLegal">Legal</NavItem>
+                        <NavItem class="guess-item" @click="openCredits">Credits</NavItem>
+                    </NavBar>
+                    <NavBar class="settings-bar">
+                        <NavItem class="guess-item" @click="showSettings = false">Close</NavItem>
+                    </NavBar>
+                </div>
+            </InfoComponent>
+        </transition>
+        <transition name="fade">
+            <InfoComponent v-if="showLegal" class="settings-menu" style="height: 50%;">
                 <InfoText variant="title">Legal</InfoText>
                 <InfoText variant="body">
                     blah blah blah legal stuff goes here
                 </InfoText>
                 <NavBar class="restart-bar">
-                    <NavItem class="guess-item" @click="showLegal = false">Back</NavItem>
+                    <NavItem class="guess-item" @click="showLegal = false; toggleSettings()">Back</NavItem>
                 </NavBar>
             </InfoComponent>
         </transition>
         <transition name="fade">
-            <InfoComponent v-if="showCredits" class="settings-menu">
+            <InfoComponent v-if="showCredits" class="settings-menu" style="height: 50%;">
                 <InfoText variant="title">Credits</InfoText>
                 <InfoText variant="body">
                     Developed by <a href="https://github.com/BouncingElf10">BouncingElf10</a>
                     Images by <a href="https://www.youtube.com/@tj_giggles/videos">TJ_Giggles</a>
                 </InfoText>
                 <NavBar class="restart-bar">
-                    <NavItem class="guess-item" @click="showCredits = false">Back</NavItem>
+                    <NavItem class="guess-item" @click="showCredits = false; toggleSettings() ">Back</NavItem>
                 </NavBar>
             </InfoComponent>
         </transition>
@@ -458,32 +501,56 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-
-.settings-bar {
-    width: calc(100% - 15px * 3.5);
-}
-
-.settings-actions {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
-
 .settings-menu {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
 
-    width: 75%;
-    height: 75%;
+    width: 70%;
+    height: auto;
+    max-height: 80%;
+    overflow-y: auto;
+
     z-index: 1000;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.7);
     padding: 30px;
+    border-radius: 16px;
 
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.settings-title {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.settings-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 15px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px 20px;
     align-items: center;
+}
+
+.settings-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.settings-bar {
+    width: 100%;
+    justify-content: center;
 }
 
 .fade-enter-active, /* THEY ARE BEING USED */
