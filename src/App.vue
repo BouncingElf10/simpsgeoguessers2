@@ -13,6 +13,8 @@ import PlacesJson from "@/assets/places.json";
 import Map from "@/components/Map.vue";
 import InfoComponent from "@/components/InfoComponent.vue";
 import InfoText from "@/components/InfoText.vue";
+import SettingToggle from "@/components/SettingToggle.vue";
+import SettingSlider from "@/components/SettingSlider.vue";
 
 const mapImageRef = ref(null);
 const mapRef = ref(null);
@@ -33,8 +35,8 @@ const totalPoints = ref(0);
 const score = ref(0);
 const totalScore = ref(0);
 const distance = ref(0)
-const maxRounds = 5;
-const timeToGuessSeconds = 14;
+const maxRounds = ref(5);
+const timeToGuessSeconds = ref(14);
 const timer = ref(0)
 const totalTimeTaken = ref(0)
 const hasTimer = ref(true)
@@ -50,6 +52,26 @@ const isFinished = ref(false);
 const gameStarted = ref(false);
 const gameFinished = ref(false);
 const hasGuessedThisRound = ref(false);
+const showSettings = ref(false);
+
+const blinkMode = ref(false)
+const invertedMode = ref(false)
+const bwMode = ref(false)
+const pixelatedMode = ref(false)
+const showLegal = ref(false)
+const showCredits = ref(false)
+function openLegal() {
+    showLegal.value = true
+    showSettings.value = false
+}
+function openCredits() {
+    showCredits.value = true
+    showSettings.value = false
+}
+
+function toggleSettings() {
+    showSettings.value = !showSettings.value;
+}
 
 function startGame() {
     resetCountdown()
@@ -77,7 +99,7 @@ function continueGame() {
             startGame()
         }
         mapRef.value.clearMap()
-        mapRef.value.showAllMarkers(guessHistory.value, maxRounds)
+        mapRef.value.showAllMarkers(guessHistory.value, maxRounds.value)
         setTimeout(() => {
             mapRef.value.defaultBounds()
         }, 50);
@@ -116,7 +138,7 @@ function placedGuess() {
         x: guessCoords.value.x + offset.x,
         y: (offset.y - guessCoords.value.y) - alignmentData.mcY * 2
     }
-    const timeTaken = timeToGuessSeconds - timer.value;
+    const timeTaken = timeToGuessSeconds.value - timer.value;
     calculatePoints(alignedCurrentCoords, alignedGuessCoords, timeTaken);
     totalPoints.value += points.value;
     totalScore.value += score.value;
@@ -129,14 +151,14 @@ function placedGuess() {
         time: timer.value,
         score: score.value,
         round: round.value,
-        roundColor: mapRef.value.getColorFromRound(round.value, maxRounds)
+        roundColor: mapRef.value.getColorFromRound(round.value, maxRounds.value)
     })
 
     setTimeout(() => {
-        mapRef.value.showCorrectMarker(alignedCurrentCoords, alignedGuessCoords, round.value, maxRounds);
+        mapRef.value.showCorrectMarker(alignedCurrentCoords, alignedGuessCoords, round.value, maxRounds.value);
     }, 50);
 
-    if (round.value >= maxRounds) {
+    if (round.value >= maxRounds.value) {
         isFinished.value = true;
         continueButonName.value = "Finish"
     }
@@ -164,7 +186,7 @@ function resetCountdown() {
 function startTimer() {
     if (timerInterval) return
 
-    endTime = performance.now() + timeToGuessSeconds * 1000
+    endTime = performance.now() + timeToGuessSeconds.value * 1000
 
     timerInterval = setInterval(() => {
         const now = performance.now()
@@ -188,23 +210,24 @@ function pauseTimer() {
 
 function restartTimer() {
     pauseTimer()
-    timer.value = timeToGuessSeconds
+    timer.value = timeToGuessSeconds.value
     startTimer()
 }
 
 function formatTime(seconds) {
-    tenSecondsLeft.value = seconds < 10
-    if (seconds > 10) {
-        const mins = Math.floor(seconds / 60)
-        const secs = Math.floor(seconds % 60)
+    const secNum = Number(seconds) || 0;
+    tenSecondsLeft.value = secNum < 10
+    if (secNum > 10) {
+        const mins = Math.floor(secNum / 60)
+        const secs = Math.floor(secNum % 60)
         return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
     } else {
-        return seconds.toFixed(2)
+        return secNum.toFixed(2)
     }
 }
 
 function finalGuessTime(seconds) {
-    const timeTaken = timeToGuessSeconds - seconds
+    const timeTaken = timeToGuessSeconds.value - seconds
     return timeTaken.toFixed(3)
 }
 
@@ -266,7 +289,6 @@ function handleKeydown(e) {
     }
 }
 
-
 onMounted(() => {
     window.addEventListener("keydown", handleKeydown);
 });
@@ -298,7 +320,7 @@ onUnmounted(() => {
                 <NavItem>
                     <LayersIcon width="32" height="32"/>
                 </NavItem>
-                <NavItem>
+                <NavItem @click="toggleSettings">
                     <SettingsIcon width="32" height="32"/>
                 </NavItem>
             </NavBar>
@@ -346,7 +368,7 @@ onUnmounted(() => {
         <InfoComponent class="end-stats" v-if="gameFinished">
             <InfoText variant="title">Game Over!</InfoText>
             <InfoText variant="body">
-                Total Points: <strong>{{ totalPoints }}</strong> / {{ maxRounds * 100 }} <br>
+                Total Points: <strong>{{ totalPoints }}</strong> / {{ maxRounds.value * 100 }} <br>
                 Total Time Taken: <strong>{{ totalTimeTaken.toFixed(2) }}</strong> seconds <br>
                 Total Score: <strong>{{ totalScore.toFixed(2) }}</strong>
             </InfoText>
@@ -382,10 +404,97 @@ onUnmounted(() => {
                 <NavItem class="guess-item" @click="startGame">Start Game</NavItem>
             </NavBar>
         </InfoComponent>
+        <transition name="fade">
+            <InfoComponent v-if="showSettings" class="settings-menu">
+                <InfoText variant="title">Settings</InfoText>
+
+                <SettingToggle v-model="hasTimer" label="Enable Timer" @update:modelValue="startGame" />
+                <SettingSlider v-model.number="countdownTimeSeconds" label="Countdown" :min="1" :max="10" @update:modelValue="startGame" />
+                <SettingSlider v-model.number="timeToGuessSeconds" label="Guess Time" :min="1" :max="60" @update:modelValue="startGame" />
+
+                <SettingSlider v-model.number="maxRounds" label="Rounds" :min="1" :max="20" @update:modelValue="startGame" />
+
+                <InfoText variant="subtitle">Fun Modes</InfoText>
+                <SettingToggle v-model="blinkMode" label="Blink Mode" @update:modelValue="startGame" />
+                <SettingToggle v-model="invertedMode" label="Inverted Colors" @update:modelValue="startGame" />
+                <SettingToggle v-model="bwMode" label="Black & White" @update:modelValue="startGame" />
+                <SettingToggle v-model="pixelatedMode" label="Pixelated" @update:modelValue="startGame" />
+
+                <div class="settings-actions">
+                    <NavBar class="settings-bar">
+                        <NavItem class="guess-item" @click="openLegal">Legal</NavItem>
+                        <NavItem class="guess-item" @click="openCredits">Credits</NavItem>
+                    </NavBar>
+                    <NavBar class="settings-bar">
+                        <NavItem class="guess-item" @click="showSettings = false">Close</NavItem>
+                    </NavBar>
+                </div>
+            </InfoComponent>
+        </transition>
+        <transition name="fade">
+            <InfoComponent v-if="showLegal" class="settings-menu">
+                <InfoText variant="title">Legal</InfoText>
+                <InfoText variant="body">
+                    blah blah blah legal stuff goes here
+                </InfoText>
+                <NavBar class="restart-bar">
+                    <NavItem class="guess-item" @click="showLegal = false">Back</NavItem>
+                </NavBar>
+            </InfoComponent>
+        </transition>
+        <transition name="fade">
+            <InfoComponent v-if="showCredits" class="settings-menu">
+                <InfoText variant="title">Credits</InfoText>
+                <InfoText variant="body">
+                    Developed by <a href="https://github.com/BouncingElf10">BouncingElf10</a>
+                    Images by <a href="https://www.youtube.com/@tj_giggles/videos">TJ_Giggles</a>
+                </InfoText>
+                <NavBar class="restart-bar">
+                    <NavItem class="guess-item" @click="showCredits = false">Back</NavItem>
+                </NavBar>
+            </InfoComponent>
+        </transition>
     </MapImage>
 </template>
 
 <style scoped>
+
+.settings-bar {
+    width: calc(100% - 15px * 3.5);
+}
+
+.settings-actions {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.settings-menu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 75%;
+    height: 75%;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 30px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.fade-enter-active, /* THEY ARE BEING USED */
+.fade-leave-active {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+}
 
 .map-wrapper img {
     display: block;
@@ -411,16 +520,22 @@ onUnmounted(() => {
     height: 100%;
     pointer-events: none;
     backdrop-filter: blur(0px);
-    transition: backdrop-filter 0.5s ease;
+    -webkit-filter: grayscale(0%);
+    filter: grayscale(0%);
+    transition: all 0.5s ease;
 }
 
 .map-blur.activesmooth {
-    backdrop-filter: blur(45px);
-    transition: backdrop-filter 0.5s ease;
+    backdrop-filter: blur(96px);
+    -webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
+    transition: all 0.5s ease;
 }
 
 .map-blur.active {
-    backdrop-filter: blur(45px);
+    backdrop-filter: blur(96px);
+    -webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
     transition: none;
 }
 
