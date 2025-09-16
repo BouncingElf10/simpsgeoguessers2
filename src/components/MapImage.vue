@@ -5,6 +5,9 @@
         imageId: {
             type: Number,
             required: true
+        },
+        pixelate: {
+            type: Boolean,
         }
     })
 
@@ -17,7 +20,7 @@
 <template>
     <div
         class="background"
-        :style="{ backgroundImage: `url(${getImageUrl(imageId)})` }"
+        :style="{ backgroundImage: `url(${getImageUrl(props.imageId)})` }"
     >
         <slot></slot>
     </div>

@@ -318,6 +318,13 @@ onUnmounted(() => {
             class="map-blur"
             :class="{ active: (countdown > 0 && gameStarted && !gameFinished) || (!blinkActive && blinkMode), activesmooth: timer <= 0, 'no-transition': blinkActive}">
         </div>
+
+        <div class="map-effects"
+             :style="{
+         filter: (invertedMode ? 'invert(1) ' : '') + (bwMode ? 'grayscale(100%) ' : ''),
+         imageRendering: pixelatedMode ? 'pixelated' : 'auto',
+         transition: blinkActive ? 'filter 0.1s ease' : 'filter 0.5s ease'
+        }"></div>
         <div class="navbar-list">
             <NavBar>
                 <NavItem @click="startGame">
@@ -596,6 +603,16 @@ onUnmounted(() => {
 
 .no-transition {
     transition: none !important;
+}
+
+.map-effects {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transition: all 0.5s ease;
 }
 
 .map-blur {
