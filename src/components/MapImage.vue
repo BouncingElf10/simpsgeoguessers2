@@ -6,8 +6,17 @@
             type: Number,
             required: true
         },
-        pixelate: {
-            type: Boolean,
+        inverted: {
+            type: Boolean
+        },
+        bw: {
+            type: Boolean
+        },
+        pixelated: {
+            type: Boolean
+        },
+        blink: {
+            type: Boolean
         }
     })
 
@@ -18,15 +27,27 @@
 </script>
 
 <template>
-    <div
-        class="background"
-        :style="{ backgroundImage: `url(${getImageUrl(props.imageId)})` }"
-    >
+    <img class="background-image" :src="getImageUrl(props.imageId)" alt="image"
+         :style="{
+         filter: (props.inverted ? 'invert(1) ' : '') + (props.bw ? 'grayscale(100%) ' : ''),
+         imageRendering: props.pixelated ? 'pixelated' : 'auto',
+         transition: props.blink ? 'filter 0.1s ease' : 'filter 0.5s ease'}"/>
+
+    <div class="background">
         <slot></slot>
     </div>
 </template>
 
 <style scoped>
+.background-image {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #202020;
+}
+
 .background {
     width: 100%;
     height: 100%;
@@ -38,7 +59,6 @@
     background-repeat: no-repeat;
     display: flex;
     flex-direction: row;
-    background-color: #202020;
 }
 
 </style>

@@ -312,19 +312,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <MapImage :imageId="currentId" ref="mapImageRef"
-               :class="[tenSecondsLeft && gameStarted && !gameFinished && hasTimer ? 'vignette' : 'vignette-out']">
+    <MapImage :imageId="currentId" :pixelate="pixelatedMode" ref="mapImageRef"
+              :pixelated="pixelatedMode" :inverted="invertedMode" :bw="bwMode" :blink="blinkActive"
+              :class="[tenSecondsLeft && gameStarted && !gameFinished && hasTimer ? 'vignette' : 'vignette-out']">
         <div
             class="map-blur"
             :class="{ active: (countdown > 0 && gameStarted && !gameFinished) || (!blinkActive && blinkMode), activesmooth: timer <= 0, 'no-transition': blinkActive}">
         </div>
 
-        <div class="map-effects"
-             :style="{
-         filter: (invertedMode ? 'invert(1) ' : '') + (bwMode ? 'grayscale(100%) ' : ''),
-         imageRendering: pixelatedMode ? 'pixelated' : 'auto',
-         transition: blinkActive ? 'filter 0.1s ease' : 'filter 0.5s ease'
-        }"></div>
         <div class="navbar-list">
             <NavBar>
                 <NavItem @click="startGame">
