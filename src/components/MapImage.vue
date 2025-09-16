@@ -29,9 +29,10 @@
 <template>
     <img class="background-image" :src="getImageUrl(props.imageId)" alt="image"
          :style="{
-         filter: (props.inverted ? 'invert(1) ' : '') + (props.bw ? 'grayscale(100%) ' : ''),
-         imageRendering: props.pixelated ? 'pixelated' : 'auto',
-         transition: props.blink ? 'filter 0.1s ease' : 'filter 0.5s ease'}"/>
+           filter: (props.pixelated ? 'url(#pixelate) ' : '') +
+                   (props.inverted ? 'invert(1) ' : '') +
+                   (props.bw ? 'grayscale(100%) ' : ''),
+           transition: props.blink ? 'filter 0.1s ease' : 'filter 0.5s ease'}"/>
 
     <div class="background">
         <slot></slot>
