@@ -1,5 +1,5 @@
 <script setup>
-import {nextTick, onMounted, onUnmounted, ref} from "vue";
+import {nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 
 import NavBar from "@/components/NavBar.vue";
 import NavItem from "@/components/NavItem.vue";
@@ -9,18 +9,22 @@ import ReturnIcon from "@/assets/internal/returnarrow.svg";
 import LayersIcon from "@/assets/internal/layers.svg";
 import LeaderboardIcon from "@/assets/internal/leaderboard.svg";
 import SettingsIcon from "@/assets/internal/settings.svg";
-import PlacesJson from "@/assets/places.json";
+import PlacesJson from "@/assets/maps/simps2/places.json";
 import Map from "@/components/Map.vue";
 import InfoComponent from "@/components/InfoComponent.vue";
 import InfoText from "@/components/InfoText.vue";
 import SettingToggle from "@/components/SettingToggle.vue";
 import SettingSlider from "@/components/SettingSlider.vue";
+import SettingDropdown from "@/components/SettingDropdown.vue";
 
 const mapImageRef = ref(null);
 const mapRef = ref(null);
 
-const alignmentData = {mapX: 796, mapY: 656, mcX: 169, mcY: 48} // also in Map.vue
-const offset = {x: 796 - 169, y: 656 - 48}
+const alignmentData = ref(getAlignmentDataForMap(getMapIdFromName("SIMPS SMP Season 2")));
+const offset = ref({
+    x: alignmentData.value.mapX - alignmentData.value.mcX,
+    y: alignmentData.value.mapY - alignmentData.value.mcY,
+});
 
 const guessHistory = ref([])
 
@@ -52,27 +56,80 @@ const isFinished = ref(false);
 const gameStarted = ref(false);
 const gameFinished = ref(false);
 const hasGuessedThisRound = ref(false);
-const showSettings = ref(false);
 
 const blinkMode = ref(false)
 const blinkActive = ref(false)
 const invertedMode = ref(false)
 const bwMode = ref(false)
 const pixelatedMode = ref(false)
-const showLegal = ref(false)
-const showCredits = ref(false)
+const currentPopupOpen = ref(null);
+const selectedMap = ref("SIMPS SMP Season 2")
+const selectedMapId = ref(getMapIdFromName(selectedMap.value))
 
-function openLegal() {
-    showLegal.value = true
-    showSettings.value = false
-}
-function openCredits() {
-    showCredits.value = true
-    showSettings.value = false
+watch(selectedMap, (newVal) => {
+    selectedMapId.value = getMapIdFromName(newVal);
+    alignmentData.value = getAlignmentDataForMap(selectedMapId.value);
+    offset.value = {
+        x: alignmentData.value.mapX - alignmentData.value.mcX,
+        y: alignmentData.value.mapY - alignmentData.value.mcY,
+    };
+});
+
+function getAlignmentDataForMap(mapId) {
+    switch (mapId) {
+        case 2:
+            return {mapX: 796, mapY: 656, mcX: 169, mcY: 48};
+        case 1:
+            return {mapX: 3027, mapY: 2729, mcX: 1491, mcY: 9047};
+    }
+
 }
 
-function toggleSettings() {
-    showSettings.value = !showSettings.value;
+function mapToMc(x, y, alignment) {
+    return {
+        x: (x - alignment.mapX) + alignment.mcX,
+        y: -(y - alignment.mapY) + alignment.mcY,
+    };
+}
+function mcToMap(x, y, alignment) {
+    return {
+        x: (x - alignment.mcX) + alignment.mapX,
+        y: -(y - alignment.mcY) + alignment.mapY,
+    };
+}
+
+function getMapIdFromName(name) {
+    switch (name) {
+        case "SIMPS SMP Season 2":
+            return 2;
+        case "SIMPS SMP Season 1":
+            return 1;
+        default:
+            return 2;
+    }
+}
+
+const popups = {
+    Settings: 0,
+    Credits: 1,
+    Legal: 2,
+    Layers: 3
+}
+
+function closePopup() {
+    currentPopupOpen.value = null;
+}
+
+function openPopup(popup) {
+    if (currentPopupOpen.value === popup) {
+        closePopup();
+        return;
+    }
+    currentPopupOpen.value = popup;
+}
+
+function isPopupOpen(popup) {
+    return currentPopupOpen.value === popup;
 }
 
 function startGame() {
@@ -110,7 +167,7 @@ function continueGame() {
         return;
     }
     mapRef.value.lockMap(false)
-    getRandomPlace()
+    getRandomPlace(getMapIdFromName(selectedMap.value))
     round.value++
     mapRef.value.clearMap()
     isFullscreen.value = false;
@@ -132,14 +189,9 @@ function placedGuess() {
         console.warn("No current place selected yet");
         return;
     }
-    const alignedCurrentCoords = {
-        x: currentCoords.value.x + offset.x,
-        y: (offset.y - currentCoords.value.y) + alignmentData.mcY * 2
-    }
-    const alignedGuessCoords = {
-        x: guessCoords.value.x + offset.x,
-        y: (offset.y - guessCoords.value.y) - alignmentData.mcY * 2
-    }
+    const alignedCurrentCoords = {x: currentCoords.value.x, y: currentCoords.value.y};
+    const alignedGuessCoords = {x: guessCoords.value.x, y: guessCoords.value.y};
+
     const timeTaken = timeToGuessSeconds.value - timer.value;
     calculatePoints(alignedCurrentCoords, alignedGuessCoords, timeTaken);
     totalPoints.value += points.value;
@@ -157,13 +209,35 @@ function placedGuess() {
     })
 
     setTimeout(() => {
-        mapRef.value.showCorrectMarker(alignedCurrentCoords, alignedGuessCoords, round.value, maxRounds.value);
+        mapRef.value.showCorrectMarker(
+            mcToMap(currentCoords.value.x, currentCoords.value.y, alignmentData.value),
+            mcToMap(guessCoords.value.x, guessCoords.value.y, alignmentData.value),
+            round.value,
+            maxRounds.value
+        );
     }, 50);
 
     if (round.value >= maxRounds.value) {
         isFinished.value = true;
         continueButonName.value = "Finish"
     }
+}
+
+async function getRandomPlace(selectedMapId) {
+    const PlacesJson = await import(
+        new URL(`./assets/maps/simps${selectedMapId}/places.json`, import.meta.url)
+        ).then(m => m.default);
+
+    const randomIndex = Math.floor(Math.random() * PlacesJson.length);
+    // const randomIndex = 0
+    const randomPlace = PlacesJson[randomIndex];
+
+    currentId.value = randomPlace.id;
+    currentCoords.value = {
+        x: randomPlace.coords[0],
+        y: randomPlace.coords[1],
+    };
+    currentPlaceName.value = randomPlace.name;
 }
 
 function startCountdown(seconds) {
@@ -261,23 +335,9 @@ function calculatePoints(currentCoords, guessCoords, timeTaken) {
     }
 }
 
-function getRandomPlace() {
-    const randomIndex = Math.floor(Math.random() * PlacesJson.length);
-    const randomPlace = PlacesJson[randomIndex];
-
-    currentId.value = randomPlace.id;
-    currentCoords.value = {
-        x: randomPlace.coords[0],
-        y: randomPlace.coords[1],
-    };
-    currentPlaceName.value = randomPlace.name;
-}
-
 function handleMapClick(coords) {
-    guessCoords.value = {
-        x: Math.floor(coords.x) - offset.x,
-        y: (offset.y - Math.floor(coords.y)) - alignmentData.mcY * 2
-    }
+    const mc = mapToMc(coords.x, coords.y, alignmentData.value);
+    guessCoords.value = { x: Math.floor(mc.x), y: Math.floor(mc.y) };
 }
 
 function handleKeydown(e) {
@@ -291,10 +351,7 @@ function handleKeydown(e) {
                 console.warn("Mouse position not available yet");
                 return;
             }
-            guessCoords.value = {
-                x: Math.floor(mouse.lng) - offset.x,
-                y: (offset.y - Math.floor(mouse.lat)) - alignmentData.mcY * 2
-            };
+            guessCoords.value = {x: Math.floor(coords.x), y: Math.floor(coords.y)};
             mapRef.value.showTempMarker(mouse);
         } else {
             placedGuess();
@@ -312,7 +369,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <MapImage :imageId="currentId" :pixelate="pixelatedMode" ref="mapImageRef"
+    <MapImage :imageId="currentId" :mapId="selectedMapId" ref="mapImageRef"
               :pixelated="pixelatedMode" :inverted="invertedMode" :bw="bwMode" :blink="blinkActive"
               :class="[tenSecondsLeft && gameStarted && !gameFinished && hasTimer ? 'vignette' : 'vignette-out']">
         <div
@@ -332,17 +389,18 @@ onUnmounted(() => {
                 <NavItem>
                     <LeaderboardIcon width="32" height="32"/>
                 </NavItem>
-                <NavItem>
+                <NavItem @click="openPopup(popups.Layers)">
                     <LayersIcon width="32" height="32"/>
                 </NavItem>
-                <NavItem @click="toggleSettings">
+                <NavItem @click="openPopup(popups.Settings)">
                     <SettingsIcon width="32" height="32"/>
                 </NavItem>
             </NavBar>
         </div>
         <MapBar>
             <div :class="{ 'fullscreen-wrapper': isFullscreen, 'normal-wrapper': !isFullscreen }">
-                <Map @map-click="handleMapClick" ref="mapRef"/>
+                <Map @map-click="handleMapClick" ref="mapRef" :mapToMc="mapToMc"
+                     :alignmentData="getAlignmentDataForMap(getMapIdFromName(selectedMap))" :offset="offset" :mapId="selectedMapId"/>
             </div>
             <NavBar class="guess-bar">
                 <NavItem
@@ -420,7 +478,7 @@ onUnmounted(() => {
             </NavBar>
         </InfoComponent>
         <transition name="fade">
-            <InfoComponent v-if="showSettings" class="settings-menu">
+            <InfoComponent v-if="isPopupOpen(popups.Settings)" class="settings-menu">
                 <InfoText variant="title" class="settings-title">Settings</InfoText>
 
                 <div class="settings-section">
@@ -445,73 +503,68 @@ onUnmounted(() => {
 
                 <div class="settings-actions">
                     <NavBar class="settings-bar">
-                        <NavItem class="guess-item" @click="openLegal">Legal</NavItem>
-                        <NavItem class="guess-item" @click="openCredits">Credits</NavItem>
+                        <NavItem class="guess-item" @click="openPopup(popups.Legal)">Legal</NavItem>
+                        <NavItem class="guess-item" @click="openPopup(popups.Credits)">Credits</NavItem>
                     </NavBar>
                     <NavBar class="settings-bar">
-                        <NavItem class="guess-item" @click="showSettings = false">Close</NavItem>
+                        <NavItem class="guess-item" @click="closePopup()">Close</NavItem>
                     </NavBar>
                 </div>
             </InfoComponent>
         </transition>
         <transition name="fade">
-            <InfoComponent v-if="showSettings" class="settings-menu">
-                <InfoText variant="title" class="settings-title">Settings</InfoText>
-
-                <div class="settings-section">
-                    <InfoText variant="subtitle">Game Options</InfoText>
-                    <div class="settings-grid">
-                        <SettingToggle v-model="hasTimer" label="Enable Timer" @update:modelValue="startGame" />
-                        <SettingSlider v-model.number="countdownTimeSeconds" label="Countdown" :min="1" :max="10" @update:modelValue="startGame" />
-                        <SettingSlider v-model.number="timeToGuessSeconds" label="Guess Time" :min="1" :max="60" @update:modelValue="startGame" />
-                        <SettingSlider v-model.number="maxRounds" label="Rounds" :min="1" :max="20" @update:modelValue="startGame" />
-                    </div>
-                </div>
-
-                <div class="settings-section">
-                    <InfoText variant="subtitle">Fun Modes</InfoText>
-                    <div class="settings-grid">
-                        <SettingToggle v-model="blinkMode" label="Blink Mode" @update:modelValue="startGame" />
-                        <SettingToggle v-model="invertedMode" label="Inverted Colors" @update:modelValue="startGame" />
-                        <SettingToggle v-model="bwMode" label="Black & White" @update:modelValue="startGame" />
-                        <SettingToggle v-model="pixelatedMode" label="Pixelated" @update:modelValue="startGame" />
-                    </div>
-                </div>
-
-                <div class="settings-actions">
-                    <NavBar class="settings-bar">
-                        <NavItem class="guess-item" @click="openLegal">Legal</NavItem>
-                        <NavItem class="guess-item" @click="openCredits">Credits</NavItem>
-                    </NavBar>
-                    <NavBar class="settings-bar">
-                        <NavItem class="guess-item" @click="showSettings = false">Close</NavItem>
-                    </NavBar>
-                </div>
-            </InfoComponent>
-        </transition>
-        <transition name="fade">
-            <InfoComponent v-if="showLegal" class="settings-menu" style="height: 50%;">
+            <InfoComponent v-if="isPopupOpen(popups.Legal)" class="settings-menu" style="height: 50%;">
                 <InfoText variant="title">Legal</InfoText>
                 <InfoText variant="body">
                     blah blah blah legal stuff goes here
                 </InfoText>
                 <NavBar class="restart-bar">
-                    <NavItem class="guess-item" @click="showLegal = false; toggleSettings()">Back</NavItem>
+                    <NavItem class="guess-item" @click="openPopup(popups.Settings)">Back</NavItem>
                 </NavBar>
             </InfoComponent>
         </transition>
         <transition name="fade">
-            <InfoComponent v-if="showCredits" class="settings-menu" style="height: 50%;">
+            <InfoComponent v-if="isPopupOpen(popups.Credits)" class="settings-menu" style="height: 50%;">
                 <InfoText variant="title">Credits</InfoText>
                 <InfoText variant="body">
                     Developed by <a href="https://github.com/BouncingElf10">BouncingElf10</a>
                     Images by <a href="https://www.youtube.com/@tj_giggles/videos">TJ_Giggles</a>
                 </InfoText>
                 <NavBar class="restart-bar">
-                    <NavItem class="guess-item" @click="showCredits = false; toggleSettings() ">Back</NavItem>
+                    <NavItem class="guess-item" @click="openPopup(popups.Settings)">Back</NavItem>
                 </NavBar>
             </InfoComponent>
         </transition>
+        <transition name="fade">
+            <InfoComponent v-if="isPopupOpen(popups.Layers)" class="settings-menu" style="height: 50%;">
+                <InfoText variant="title">Maps</InfoText>
+                <SettingDropdown
+                    label="Map Selection"
+                    :options="['SIMPS SMP Season 2', 'SIMPS SMP Season 1']"
+                    v-model="selectedMap"
+                    @update:modelValue="startGame"
+                />
+
+                <NavBar class="restart-bar">
+                    <NavItem class="guess-item" @click="closePopup()">Back</NavItem>
+                </NavBar>
+            </InfoComponent>
+        </transition>
+        <div style="position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.8); color: lime; font-size: 12px; font-family: 'Barlow', sans-serif; padding: 10px; max-height: 40%; overflow: auto; z-index: 99999;">
+            <strong>Debug Info</strong><br>
+            Map: {{ selectedMap }} (ID: {{ selectedMapId }})<br>
+            Alignment: mapX={{ alignmentData.mapX }}, mapY={{ alignmentData.mapY }}, mcX={{ alignmentData.mcX }}, mcY={{ alignmentData.mcY }}<br>
+            Offset: x={{ offset.x }}, y={{ offset.y }}<br>
+            <br>
+            Current Coords (MC): x={{ currentCoords.x }}, y={{ currentCoords.y }}<br>
+            Guess Coords (MC): x={{ guessCoords.x }}, y={{ guessCoords.y }}<br>
+            <br>
+            Current → Map: {{ mcToMap(currentCoords.x || 0, currentCoords.y || 0, alignmentData) }}<br>
+            Guess → Map: {{ mcToMap(guessCoords.x || 0, guessCoords.y || 0, alignmentData) }}<br>
+            <br>
+            Current → MC (from Map): {{ mapToMc(mcToMap(currentCoords.x || 0, currentCoords.y || 0, alignmentData).x, mcToMap(currentCoords.x || 0, currentCoords.y || 0, alignmentData).y, alignmentData) }}<br>
+            Guess → MC (from Map): {{ mapToMc(mcToMap(guessCoords.x || 0, guessCoords.y || 0, alignmentData).x, mcToMap(guessCoords.x || 0, guessCoords.y || 0, alignmentData).y, alignmentData) }}<br>
+        </div>
     </MapImage>
 </template>
 

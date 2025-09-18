@@ -2,40 +2,49 @@
     import { defineProps } from 'vue'
 
     const props = defineProps({
+        mapId: {
+            type: Number,
+            required: true
+        },
         imageId: {
             type: Number,
             required: true
         },
-        inverted: {
-            type: Boolean
-        },
-        bw: {
-            type: Boolean
-        },
-        pixelated: {
-            type: Boolean
-        },
-        blink: {
-            type: Boolean
-        }
+        inverted: Boolean,
+        bw: Boolean,
+        pixelated: Boolean,
+        blink: Boolean,
     })
 
-    function getImageUrl(id: number) {
-        return new URL(`../assets/images/${id}.png`, import.meta.url).href
+    const images = import.meta.glob('../assets/maps/simps*/images/*.{jpg,png}', { eager: true });
+
+    function getImageUrl(id: number, mapId: number): string {
+        const pngPath = `../assets/maps/simps${mapId}/images/${id}.png`;
+        const jpgPath = `../assets/maps/simps${mapId}/images/image${id}.jpg`;
+
+        if (images[pngPath]) return images[pngPath].default;
+        if (images[jpgPath]) return images[jpgPath].default;
+
+        console.warn(`Image not found: ${id} in map ${mapId}`);
+        return '';
     }
 
 </script>
 
 <template>
-    <img class="background-image" :src="getImageUrl(props.imageId)" alt="image"
-         :style="{
-           filter: (props.pixelated ? 'url(#pixelate) ' : '') +
-                   (props.inverted ? 'invert(1) ' : '') +
-                   (props.bw ? 'grayscale(100%) ' : ''),
-           transition: props.blink ? 'filter 0.1s ease' : 'filter 0.5s ease'}"/>
-
-    <div class="background">
-        <slot></slot>
+    <div class="map-image-wrapper" v-bind="$attrs">
+        <img
+            class="background-image"
+            :src="getImageUrl(props.imageId, props.mapId)"
+            alt="image"
+            :style="{
+        filter: (props.pixelated ? 'url(#pixelate) ' : '') +
+                (props.inverted ? 'invert(1) ' : '') +
+                (props.bw ? 'grayscale(100%) ' : ''),
+        transition: props.blink ? 'filter 0.1s ease' : 'filter 0.5s ease'}"/>
+        <div class="background">
+            <slot></slot>
+        </div>
     </div>
 </template>
 

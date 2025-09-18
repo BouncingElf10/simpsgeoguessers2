@@ -3,9 +3,13 @@ import App from './App.vue'
 
 createApp(App).mount('#app')
 
-//TODO: settings
+//TODO: dynamic img bounds
+//TODO: better debug
+//TODO: fix zoom
+//TODO: fix all the fucking errors in console
+//TODO: fix bug that no timer still brings up the blur
+//TODO: use cookies or sum idk save settings
 //TODO: leaderboard
-//TODO: fun gamemodes (blink, inverted, b&w, pixelated)
-//TODO: sound effects -- egh maybe
 //TODO: old season 1 map (link and images) (layers)
+//TODO: sound effects -- egh maybe
 //TODO: mobile controls -- maybe
