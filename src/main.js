@@ -3,7 +3,6 @@ import App from './App.vue'
 
 createApp(App).mount('#app')
 
-//TODO: dynamic img bounds
 //TODO: better debug
 //TODO: fix zoom
 //TODO: fix all the fucking errors in console

@@ -25,7 +25,6 @@
         if (images[pngPath]) return images[pngPath].default;
         if (images[jpgPath]) return images[jpgPath].default;
 
-        console.warn(`Image not found: ${id} in map ${mapId}`);
         return '';
     }
 

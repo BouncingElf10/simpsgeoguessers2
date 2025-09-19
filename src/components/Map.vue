@@ -15,7 +15,15 @@
     let map = ref<L.Map>()
     let guessMarker = ref<L.Marker>()
 
-    const imageBounds = [[0, 0], [5632, 6144]]
+    const imageBounds = computed(() => {
+        if (props.mapId === 1) {
+            return [[0, 0], [5632, 6144]];
+        } else if (props.mapId === 2) {
+            return [[0, 0], [4096, 4096]];
+        }
+        return [[0, 0], [5632, 6144]];
+    });
+
     const locked = ref(true)
     const mousePos = ref({x: 0, y: 0})
 
@@ -39,10 +47,9 @@
             zoom: 0,
         });
 
-        const overlay = L.imageOverlay(imageUrl.value, imageBounds).addTo(m);
-        m.fitBounds(imageBounds);
+        const overlay = L.imageOverlay(imageUrl.value, imageBounds.value).addTo(m);
+        m.fitBounds(imageBounds.value);
 
-        // coords control
         const coordsControl = L.control({ position: "topright" });
         coordsControl.onAdd = function () {
             const div = L.DomUtil.create("div", "coords-display");
@@ -55,7 +62,7 @@
             const coordsDiv = document.querySelector(".coords-display");
             if (coordsDiv) {
                 const mcCoords = e.latlng;
-                mousePos.value = props.mapToMc({ x: mcCoords.lng, y: mcCoords.lat }, props.alignmentData);
+                mousePos.value = props.mapToMc(mcCoords.lng, mcCoords.lat, props.alignmentData);
                 coordsDiv.innerHTML = `x: ${mousePos.value.x.toFixed(0)}, y: ${mousePos.value.y.toFixed(0)}`;
             }
         });
@@ -71,7 +78,11 @@
         const mapElement = document.getElementById("map");
         if (mapElement) {
             const resizeObserver = new ResizeObserver(() => {
-                m.invalidateSize();
+                try {
+                    m.invalidateSize();
+                } catch (e) {
+
+                }
             });
             resizeObserver.observe(mapElement);
         }
@@ -146,7 +157,7 @@
     }
 
     function defaultBounds() {
-        map.value!.fitBounds(imageBounds, { padding: [50, 50], maxZoom: 4 });
+        map.value!.fitBounds(imageBounds.value, { padding: [50, 50], maxZoom: 4 });
     }
 
     function showAllMarkers(guessHistory, maxRounds: number,) {
