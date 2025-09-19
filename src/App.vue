@@ -1,5 +1,5 @@
 <script setup>
-import {nextTick, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 
 import NavBar from "@/components/NavBar.vue";
 import NavItem from "@/components/NavItem.vue";
@@ -359,6 +359,41 @@ function handleKeydown(e) {
     }
 }
 
+const debugSections = computed(() => ({
+    Game: {
+        started: gameStarted.value,
+        finished: gameFinished.value,
+        fullscreen: isFullscreen.value,
+        round: `${round.value}/${maxRounds.value}`
+    },
+    Timers: {
+        hasTimer: hasTimer.value,
+        countdown: countdown.value,
+        timer: timer.value.toFixed(2),
+        totalTime: totalTimeTaken.value.toFixed(2),
+        active: !!timerInterval
+    },
+    Scoring: {
+        points: points.value,
+        score: score.value.toFixed(2),
+        totalPoints: totalPoints.value,
+        totalScore: totalScore.value.toFixed(2),
+        distance: distance.value.toFixed(2)
+    },
+    Map: {
+        selected: selectedMap.value,
+        id: selectedMapId.value,
+        offset: offset.value
+    },
+    Coords: {
+        currentMC: currentCoords.value,
+        guessMC: guessCoords.value,
+        currentMap: mcToMap(currentCoords.value?.x || 0, currentCoords.value?.y || 0, alignmentData.value),
+        guessMap: mcToMap(guessCoords.value?.x || 0, guessCoords.value?.y || 0, alignmentData.value)
+    }
+}));
+
+
 onMounted(() => {
     window.addEventListener("keydown", handleKeydown);
 });
@@ -550,25 +585,59 @@ onUnmounted(() => {
                 </NavBar>
             </InfoComponent>
         </transition>
-        <div style="position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.8); color: lime; font-size: 12px; font-family: 'Barlow', sans-serif; padding: 10px; max-height: 40%; overflow: auto; z-index: 99999;">
-            <strong>Debug Info</strong><br>
-            Map: {{ selectedMap }} (ID: {{ selectedMapId }})<br>
-            Alignment: mapX={{ alignmentData.mapX }}, mapY={{ alignmentData.mapY }}, mcX={{ alignmentData.mcX }}, mcY={{ alignmentData.mcY }}<br>
-            Offset: x={{ offset.x }}, y={{ offset.y }}<br>
-            <br>
-            Current Coords (MC): x={{ currentCoords.x }}, y={{ currentCoords.y }}<br>
-            Guess Coords (MC): x={{ guessCoords.x }}, y={{ guessCoords.y }}<br>
-            <br>
-            Current → Map: {{ mcToMap(currentCoords.x || 0, currentCoords.y || 0, alignmentData) }}<br>
-            Guess → Map: {{ mcToMap(guessCoords.x || 0, guessCoords.y || 0, alignmentData) }}<br>
-            <br>
-            Current → MC (from Map): {{ mapToMc(mcToMap(currentCoords.x || 0, currentCoords.y || 0, alignmentData).x, mcToMap(currentCoords.x || 0, currentCoords.y || 0, alignmentData).y, alignmentData) }}<br>
-            Guess → MC (from Map): {{ mapToMc(mcToMap(guessCoords.x || 0, guessCoords.y || 0, alignmentData).x, mcToMap(guessCoords.x || 0, guessCoords.y || 0, alignmentData).y, alignmentData) }}<br>
+        <div class="debug-overlay">
+            <div v-for="(data, title) in debugSections" :key="title" class="debug-section">
+                <h4>{{ title }}</h4>
+                <ul>
+                    <li v-for="(val, key) in data" :key="key">
+                        <strong>{{ key }}:</strong> {{ val }}
+                    </li>
+                </ul>
+            </div>
         </div>
+
     </MapImage>
 </template>
 
 <style scoped>
+.debug-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: rgba(0,0,0,0.85);
+    color: lime;
+    font-size: 12px;
+    font-family: monospace;
+    padding: 10px;
+    max-width: 30%;
+    max-height: 50%;
+    overflow: auto;
+    z-index: 99999;
+
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.debug-section {
+    border: 1px solid rgba(0,255,0,0.2);
+    padding: 5px;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.3);
+}
+
+.debug-section h4 {
+    margin: 0 0 4px 0;
+    font-size: 13px;
+    color: #0f0;
+}
+
+.debug-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
 .settings-menu {
     position: absolute;
     top: 50%;
