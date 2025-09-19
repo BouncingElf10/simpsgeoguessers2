@@ -23,8 +23,6 @@ const app = createApp(App);
 app.use(router);
 app.mount('#app');
 
-
-//TODO: fix ui continuity on different screens
 //TODO: use cookies or sum idk save settings
 //TODO: leaderboard
 //TODO: sound effects -- egh maybe

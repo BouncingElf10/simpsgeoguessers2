@@ -531,7 +531,7 @@ onUnmounted(() => {
                     <InfoText variant="subtitle">Fun Modes</InfoText>
                     <div class="settings-grid">
                         <SettingToggle v-model="blinkMode" v-if="hasTimer" label="Blink Mode" @update:modelValue="startGame" />
-                        <SettingToggle v-model="blinkMode" v-if="!hasTimer" label="Blink Mode (needs timer on)" @update:modelValue="startGame" />
+                        <SettingToggle v-model="blinkMode" v-else label="Blink Mode (needs timer on)" @update:modelValue="startGame" />
                         <SettingToggle v-model="invertedMode" label="Inverted Colors" @update:modelValue="startGame" />
                         <SettingToggle v-model="bwMode" label="Black & White" @update:modelValue="startGame" />
                         <SettingToggle v-model="pixelatedMode" label="Pixelated" @update:modelValue="startGame" />
@@ -550,43 +550,64 @@ onUnmounted(() => {
             </InfoComponent>
         </transition>
         <transition name="fade">
-            <InfoComponent v-if="isPopupOpen(popups.Legal)" class="settings-menu" style="height: 50%;">
-                <InfoText variant="title">Legal</InfoText>
-                <InfoText variant="body">
-                    blah blah blah legal stuff goes here
-                </InfoText>
-                <NavBar class="restart-bar">
-                    <NavItem class="guess-item" @click="openPopup(popups.Settings)">Back</NavItem>
-                </NavBar>
+            <InfoComponent v-if="isPopupOpen(popups.Legal)" class="settings-menu">
+                <InfoText variant="title" class="settings-title">Legal</InfoText>
+
+                <div class="settings-section">
+                    <InfoText variant="body">
+                        blah blah blah legal stuff goes here
+                    </InfoText>
+                </div>
+
+                <div class="settings-actions">
+                    <NavBar class="settings-bar">
+                        <NavItem class="guess-item" @click="openPopup(popups.Settings)">Back</NavItem>
+                    </NavBar>
+                </div>
             </InfoComponent>
         </transition>
         <transition name="fade">
-            <InfoComponent v-if="isPopupOpen(popups.Credits)" class="settings-menu" style="height: 50%;">
-                <InfoText variant="title" @click="showDebug = true">Credits</InfoText>
-                <InfoText variant="body">
-                    Developed by <a href="https://github.com/BouncingElf10">BouncingElf10</a>
-                    Images by <a href="https://www.youtube.com/@tj_giggles/videos">TJ_Giggles</a>
-                </InfoText>
-                <NavBar class="restart-bar">
-                    <NavItem class="guess-item" @click="openPopup(popups.Settings)">Back</NavItem>
-                </NavBar>
+            <InfoComponent v-if="isPopupOpen(popups.Credits)" class="settings-menu">
+                <InfoText variant="title" class="settings-title">Credits</InfoText>
+
+                <div class="settings-section">
+                    <InfoText variant="body">
+                        Developed by <a href="https://github.com/BouncingElf10">BouncingElf10</a><br>
+                        Images by <a href="https://www.youtube.com/@tj_giggles/videos">TJ_Giggles</a>
+                    </InfoText>
+                </div>
+
+                <div class="settings-actions">
+                    <NavBar class="settings-bar">
+                        <NavItem class="guess-item" @click="openPopup(popups.Settings)">Back</NavItem>
+                    </NavBar>
+                </div>
             </InfoComponent>
         </transition>
         <transition name="fade">
-            <InfoComponent v-if="isPopupOpen(popups.Layers)" class="settings-menu" style="height: 50%;">
-                <InfoText variant="title">Maps</InfoText>
-                <SettingDropdown
-                    label="Map Selection"
-                    :options="['SIMPS SMP Season 2', 'SIMPS SMP Season 1']"
-                    v-model="selectedMap"
-                    @update:modelValue="startGame"
-                />
-                <router-link to="/old">Visit the Old Site</router-link>
-                <NavBar class="restart-bar">
-                    <NavItem class="guess-item" @click="closePopup()">Back</NavItem>
-                </NavBar>
+            <InfoComponent v-if="isPopupOpen(popups.Layers)" class="settings-menu">
+                <InfoText variant="title" class="settings-title">Maps</InfoText>
+
+                <div class="settings-section">
+                    <SettingDropdown
+                        label="Map Selection"
+                        :options="['SIMPS SMP Season 2', 'SIMPS SMP Season 1']"
+                        v-model="selectedMap"
+                        @update:modelValue="startGame"
+                    />
+                    <InfoText variant="body" class="credits">
+                        <router-link to="/old" class="styled-link">Visit the Old Site</router-link>
+                    </InfoText>
+                </div>
+
+                <div class="settings-actions">
+                    <NavBar class="settings-bar">
+                        <NavItem class="guess-item" @click="closePopup()">Back</NavItem>
+                    </NavBar>
+                </div>
             </InfoComponent>
         </transition>
+
         <div class="debug-overlay" v-if="showDebug">
             <div v-for="(data, title) in debugSections" :key="title" class="debug-section">
                 <h4>{{ title }}</h4>
@@ -605,6 +626,19 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+
+.styled-link {
+    color: #4da6ff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.styled-link:hover {
+    color: #82c6ff;
+    text-decoration: underline;
+}
+
 .debug-overlay {
     position: absolute;
     top: 0;
