@@ -581,7 +581,7 @@ onUnmounted(() => {
                     v-model="selectedMap"
                     @update:modelValue="startGame"
                 />
-
+                <router-link to="/old">Visit the Old Site</router-link>
                 <NavBar class="restart-bar">
                     <NavItem class="guess-item" @click="closePopup()">Back</NavItem>
                 </NavBar>
