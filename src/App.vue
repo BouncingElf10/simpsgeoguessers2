@@ -359,7 +359,7 @@ function handleKeydown(e) {
         }
     }
 }
-
+const showDebug = ref(false);
 const debugSections = computed(() => ({
     Game: {
         started: gameStarted.value,
@@ -435,7 +435,7 @@ onUnmounted(() => {
         </div>
         <MapBar>
             <div :class="{ 'fullscreen-wrapper': isFullscreen, 'normal-wrapper': !isFullscreen }">
-                <Map @map-click="handleMapClick" ref="mapRef" :mapToMc="mapToMc"
+                <Map @map-click="handleMapClick" ref="mapRef" :mapToMc="mapToMc" :mcToMap="mcToMap"
                      :alignmentData="getAlignmentDataForMap(getMapIdFromName(selectedMap))" :offset="offset" :mapId="selectedMapId"/>
             </div>
             <NavBar class="guess-bar">
@@ -530,7 +530,8 @@ onUnmounted(() => {
                 <div class="settings-section">
                     <InfoText variant="subtitle">Fun Modes</InfoText>
                     <div class="settings-grid">
-                        <SettingToggle v-model="blinkMode" label="Blink Mode" @update:modelValue="startGame" />
+                        <SettingToggle v-model="blinkMode" v-if="hasTimer" label="Blink Mode" @update:modelValue="startGame" />
+                        <SettingToggle v-model="blinkMode" v-if="!hasTimer" label="Blink Mode (needs timer on)" @update:modelValue="startGame" />
                         <SettingToggle v-model="invertedMode" label="Inverted Colors" @update:modelValue="startGame" />
                         <SettingToggle v-model="bwMode" label="Black & White" @update:modelValue="startGame" />
                         <SettingToggle v-model="pixelatedMode" label="Pixelated" @update:modelValue="startGame" />
@@ -561,7 +562,7 @@ onUnmounted(() => {
         </transition>
         <transition name="fade">
             <InfoComponent v-if="isPopupOpen(popups.Credits)" class="settings-menu" style="height: 50%;">
-                <InfoText variant="title">Credits</InfoText>
+                <InfoText variant="title" @click="showDebug = true">Credits</InfoText>
                 <InfoText variant="body">
                     Developed by <a href="https://github.com/BouncingElf10">BouncingElf10</a>
                     Images by <a href="https://www.youtube.com/@tj_giggles/videos">TJ_Giggles</a>
@@ -586,7 +587,7 @@ onUnmounted(() => {
                 </NavBar>
             </InfoComponent>
         </transition>
-        <div class="debug-overlay">
+        <div class="debug-overlay" v-if="showDebug">
             <div v-for="(data, title) in debugSections" :key="title" class="debug-section">
                 <h4>{{ title }}</h4>
                 <ul>
@@ -595,6 +596,9 @@ onUnmounted(() => {
                     </li>
                 </ul>
             </div>
+            <button @click="showDebug = false">
+                If you ended up here on accident dont worry just click here to close the debug overlay
+            </button>
         </div>
 
     </MapImage>

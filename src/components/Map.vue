@@ -6,6 +6,7 @@
         alignmentData: Object,
         offset: Object,
         mapToMc: Function,
+        mcToMap: Function,
         mapId: Number
     });
 
@@ -42,7 +43,7 @@
         const m = L.map("map", {
             attributionControl: false,
             crs: L.CRS.Simple,
-            minZoom: -1,
+            minZoom: -3,
             maxZoom: 4,
             zoom: 0,
         });
@@ -160,12 +161,18 @@
         map.value!.fitBounds(imageBounds.value, { padding: [50, 50], maxZoom: 4 });
     }
 
-    function showAllMarkers(guessHistory, maxRounds: number,) {
+    function showAllMarkers(guessHistory, maxRounds: number) {
         for (const guess of guessHistory) {
-            L.marker([guess.guessCoords.y, guess.guessCoords.x]).addTo(map.value!)
-            showCorrectMarker(guess.currentCoords, guess.guessCoords, guess.round, maxRounds)
+            const mapGuessCoords = props.mcToMap(guess.guessCoords.x, guess.guessCoords.y, props.alignmentData);
+            L.marker([mapGuessCoords.y, mapGuessCoords.x]).addTo(map.value!);
+
+            const mapCurrentCoords = props.mcToMap(guess.currentCoords.x, guess.currentCoords.y, props.alignmentData);
+            const mapGuessCoordsForCorrect = props.mcToMap(guess.guessCoords.x, guess.guessCoords.y, props.alignmentData);
+            showCorrectMarker(mapCurrentCoords, mapGuessCoordsForCorrect, guess.round, maxRounds);
         }
     }
+
+
 
     function lockMap(shouldLock: boolean) {
         locked.value = shouldLock
