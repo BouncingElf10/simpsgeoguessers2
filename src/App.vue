@@ -273,6 +273,7 @@ function resetCountdown() {
 
 function startTimer() {
     if (timerInterval) return
+    if (!hasTimer.value) return
 
     endTime = performance.now() + timeToGuessSeconds.value * 1000
     timerInterval = setInterval(() => {
