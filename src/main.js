@@ -23,7 +23,6 @@ const app = createApp(App);
 app.use(router);
 app.mount('#app');
 
-//TODO: use cookies or sum idk save settings
 //TODO: leaderboard
-//TODO: sound effects -- egh maybe
 //TODO: mobile controls -- maybe
+//TODO: sound effects -- egh maybe

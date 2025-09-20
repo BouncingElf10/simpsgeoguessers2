@@ -120,6 +120,7 @@ function loadSettings() {
 }
 
 function resetToDefaults() {
+    closePopup()
     selectedMap.value = DEFAULT_SETTINGS.selectedMap;
     hasTimer.value = DEFAULT_SETTINGS.hasTimer;
     blinkMode.value = DEFAULT_SETTINGS.blinkMode;
@@ -130,6 +131,9 @@ function resetToDefaults() {
     timeToGuessSeconds.value = DEFAULT_SETTINGS.timeToGuessSeconds;
     maxRounds.value = DEFAULT_SETTINGS.maxRounds;
     saveSettings();
+    setTimeout(() => {
+        openPopup(popups.Settings)
+    }, 50);
 }
 watch([hasTimer, blinkMode, invertedMode, bwMode, pixelatedMode, selectedMap, showDebug, countdownTimeSeconds, timeToGuessSeconds, maxRounds], saveSettings);
 
@@ -613,7 +617,7 @@ onUnmounted(() => {
                     <NavBar class="settings-bar">
                         <NavItem class="guess-item" @click="openPopup(popups.Legal)">Legal</NavItem>
                         <NavItem class="guess-item" @click="openPopup(popups.Credits)">Credits</NavItem>
-                        <NavItem class="guess-item" @click="resetToDefaults(); startGame()">Reset To Defaults</NavItem>
+                        <NavItem class="guess-item" @click="resetToDefaults(); startGame();">Reset To Defaults</NavItem>
                     </NavBar>
                     <NavBar class="settings-bar">
                         <NavItem class="guess-item" @click="closePopup()">Close</NavItem>
