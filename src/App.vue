@@ -65,6 +65,73 @@ const pixelatedMode = ref(false)
 const currentPopupOpen = ref(null);
 const selectedMap = ref("SIMPS SMP Season 2")
 const selectedMapId = ref(getMapIdFromName(selectedMap.value))
+const showDebug = ref(false);
+
+const DEFAULT_SETTINGS = {
+    hasTimer: true,
+    blinkMode: false,
+    invertedMode: false,
+    bwMode: false,
+    pixelatedMode: false,
+    selectedMap: "SIMPS SMP Season 2",
+    showDebug: false,
+    countdownTimeSeconds: 3,
+    timeToGuessSeconds: 30,
+    maxRounds: 5,
+};
+const SETTINGS_KEY = "simps_geoguesser_settings";
+
+function saveSettings() {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+        hasTimer: hasTimer.value,
+        blinkMode: blinkMode.value,
+        invertedMode: invertedMode.value,
+        bwMode: bwMode.value,
+        pixelatedMode: pixelatedMode.value,
+        selectedMap: selectedMap.value,
+        showDebug: showDebug.value,
+        countdownTimeSeconds: countdownTimeSeconds.value,
+        timeToGuessSeconds: timeToGuessSeconds.value,
+        maxRounds: maxRounds.value,
+    }));
+}
+
+function loadSettings() {
+    const savedSettings = localStorage.getItem(SETTINGS_KEY);
+    if (savedSettings) {
+        try {
+            const parsedSettings = JSON.parse(savedSettings);
+            hasTimer.value = parsedSettings.hasTimer;
+            blinkMode.value = parsedSettings.blinkMode;
+            invertedMode.value = parsedSettings.invertedMode;
+            bwMode.value = parsedSettings.bwMode;
+            pixelatedMode.value = parsedSettings.pixelatedMode;
+            selectedMap.value = parsedSettings.selectedMap;
+            showDebug.value = parsedSettings.showDebug;
+            countdownTimeSeconds.value = parsedSettings.countdownTimeSeconds;
+            timeToGuessSeconds.value = parsedSettings.timeToGuessSeconds;
+            maxRounds.value = parsedSettings.maxRounds;
+            saveSettings();
+        } catch (error) {
+            console.error("Error loading settings:", error);
+            resetToDefaults();
+        }
+    }
+}
+
+function resetToDefaults() {
+    selectedMap.value = DEFAULT_SETTINGS.selectedMap;
+    hasTimer.value = DEFAULT_SETTINGS.hasTimer;
+    blinkMode.value = DEFAULT_SETTINGS.blinkMode;
+    invertedMode.value = DEFAULT_SETTINGS.invertedMode;
+    bwMode.value = DEFAULT_SETTINGS.bwMode;
+    pixelatedMode.value = DEFAULT_SETTINGS.pixelatedMode;
+    countdownTimeSeconds.value = DEFAULT_SETTINGS.countdownTimeSeconds;
+    timeToGuessSeconds.value = DEFAULT_SETTINGS.timeToGuessSeconds;
+    maxRounds.value = DEFAULT_SETTINGS.maxRounds;
+    saveSettings();
+}
+watch([hasTimer, blinkMode, invertedMode, bwMode, pixelatedMode, selectedMap, showDebug, countdownTimeSeconds, timeToGuessSeconds, maxRounds], saveSettings);
 
 watch(selectedMap, (newVal) => {
     selectedMapId.value = getMapIdFromName(newVal);
@@ -359,7 +426,7 @@ function handleKeydown(e) {
         }
     }
 }
-const showDebug = ref(false);
+
 const debugSections = computed(() => ({
     Game: {
         started: gameStarted.value,
@@ -391,11 +458,15 @@ const debugSections = computed(() => ({
         guessMC: guessCoords.value,
         currentMap: mcToMap(currentCoords.value?.x || 0, currentCoords.value?.y || 0, alignmentData.value),
         guessMap: mcToMap(guessCoords.value?.x || 0, guessCoords.value?.y || 0, alignmentData.value)
+    },
+    LocalStorage: {
+        JSON: localStorage.getItem(SETTINGS_KEY),
     }
 }));
 
 
 onMounted(() => {
+    loadSettings();
     window.addEventListener("keydown", handleKeydown);
 });
 
@@ -542,6 +613,7 @@ onUnmounted(() => {
                     <NavBar class="settings-bar">
                         <NavItem class="guess-item" @click="openPopup(popups.Legal)">Legal</NavItem>
                         <NavItem class="guess-item" @click="openPopup(popups.Credits)">Credits</NavItem>
+                        <NavItem class="guess-item" @click="resetToDefaults(); startGame()">Reset To Defaults</NavItem>
                     </NavBar>
                     <NavBar class="settings-bar">
                         <NavItem class="guess-item" @click="closePopup()">Close</NavItem>
@@ -568,7 +640,7 @@ onUnmounted(() => {
         </transition>
         <transition name="fade">
             <InfoComponent v-if="isPopupOpen(popups.Credits)" class="settings-menu">
-                <InfoText variant="title" class="settings-title">Credits</InfoText>
+                <InfoText variant="title" class="settings-title" @click="showDebug = true">Credits</InfoText>
 
                 <div class="settings-section">
                     <InfoText variant="body">
