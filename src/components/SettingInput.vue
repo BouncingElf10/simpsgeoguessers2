@@ -53,12 +53,13 @@ function handleSubmit() {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    font-family: 'Roboto', sans-serif;
+    font-family: "Barlow", sans-serif;
 }
 
 .setting-input label {
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 500;
+    font-family: "Barlow", sans-serif;
     color: #fff;
 }
 
@@ -78,6 +79,7 @@ function handleSubmit() {
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
     font-size: 14px;
+    font-family: "Barlow", sans-serif;
     transition: background 0.2s ease;
 }
 
@@ -91,6 +93,7 @@ function handleSubmit() {
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.2);
     color: #fff;
+    font-family: "Barlow", sans-serif;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;

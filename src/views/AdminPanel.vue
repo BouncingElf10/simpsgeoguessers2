@@ -10,7 +10,7 @@ async function loadRecent() {
     if (!adminToken.value) return;
     try {
         const res = await fetch("/api/admin/recent", {
-            headers: {"x-admin-token": adminToken.value}
+            headers: { "x-admin-token": adminToken.value }
         });
         const data = await res.json();
 
@@ -43,7 +43,6 @@ async function loadBanned() {
         message.value = "Network error while loading banned list";
     }
 }
-
 
 async function banIp(ipHash) {
     if (!confirm(`Ban ipHash: ${ipHash}?`)) return;
@@ -83,70 +82,130 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="admin-panel">
-        <h2>Admin Panel – Bans</h2>
-        <p v-if="message">{{ message }}</p>
+    <div class="admin-panel settings-menu">
+        <h2 class="info-text title">Admin Panel – Bans</h2>
+        <p class="info-text highlight" v-if="message">{{ message }}</p>
 
-        <h3>Recent submissions</h3>
-        <table v-if="recent.length">
-            <thead>
-            <tr>
-                <th>Username</th>
-                <th>Score</th>
-                <th>ipHash</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="r in recent" :key="r.username + r.createdAt">
-                <td>{{ r.username }}</td>
-                <td>{{ r.score }}</td>
-                <td style="font-family: monospace">{{ r.ipHash }}</td>
-                <td>
-                    <button @click="banUsername(r.username)">Ban by username</button>
-                    <button @click="banIp(r.ipHash)">Ban IP</button>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+        <div class="settings-section">
+            <h3 class="info-text subtitle">Recent Submissions</h3>
+            <table v-if="recent.length" class="styled-table">
+                <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Score</th>
+                    <th>IP Hash</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="r in recent" :key="r.username + r.createdAt">
+                    <td>{{ r.username }}</td>
+                    <td>{{ r.score }}</td>
+                    <td class="monospace">{{ r.ipHash }}</td>
+                    <td class="settings-actions">
+                        <button @click="banUsername(r.username)">Ban Username</button>
+                        <button @click="banIp(r.ipHash)">Ban IP</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
 
-        <h3>Banned list</h3>
-        <ul>
-            <li v-for="ip in banned" :key="ip">
-                {{ ip }}
-            </li>
-        </ul>
+        <div class="settings-section">
+            <h3 class="info-text subtitle">Banned List</h3>
+            <ul>
+                <li v-for="ip in banned" :key="ip" class="info-text body">
+                    {{ ip }}
+                </li>
+            </ul>
+        </div>
     </div>
+    <div class="background"></div>
 </template>
 
 <style scoped>
-.admin-panel {
-    padding: 20px;
-    background: rgba(0,0,0,0.7);
-    color: white;
-    border-radius: 8px;
-    max-width: 800px;
-    margin: 0 auto;
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #1b1b1b;
+    background-size: cover;
+    z-index: -1;
 }
-table {
+
+body {
+    background-color: #2b2b2b;
+    font-family: 'Barlow', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.admin-panel {
+    background: rgba(0,0,0,0.75);
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 20px 30px;
+    max-width: 900px;
+    margin: 40px auto;
+    font-family: 'Barlow', sans-serif;
+}
+
+.styled-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 10px 0;
+    margin-top: 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: 'Barlow', sans-serif;
 }
-td, th {
-    border: 1px solid #444;
-    padding: 6px 10px;
+
+.styled-table th, .styled-table td {
+    padding: 10px 12px;
+    text-align: left;
 }
+
+.styled-table th {
+    background: rgba(255,255,255,0.1);
+    font-weight: 600;
+}
+
+.styled-table tr {
+    transition: background 0.3s ease;
+}
+
+.styled-table tr:hover {
+    background: rgba(255,255,255,0.1);
+}
+
 button {
+    padding: 6px 12px;
     margin: 0 4px;
-    padding: 4px 8px;
-    background: #d33;
-    color: white;
+    background-color: #d33;
+    color: #fff;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
+    font-weight: 500;
+    font-family: 'Barlow', sans-serif;
+    transition: background 0.3s ease;
 }
+
 button:hover {
-    background: #a22;
+    background-color: #a22;
+}
+
+.settings-section {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    font-family: 'Barlow', sans-serif;
+}
+
+.monospace {
+    font-family: monospace;
 }
 </style>
