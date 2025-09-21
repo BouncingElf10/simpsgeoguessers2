@@ -8,10 +8,14 @@
   },
   "scripts": {
     "dev": "vite",
+    "vercel": "vercel dev",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@upstash/redis": "^1.35.4",
+    "@vercel/kv": "^3.0.0",
+    "dotenv": "^17.2.2",
     "leaflet": "^1.9.4",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1"

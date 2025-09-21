@@ -1,12 +1,13 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router';
 import App from './App.vue'
+import Home from './views/Home.vue'
+import AdminPanel from './views/AdminPanel.vue'
 
-// Routes
 const routes = [
-    { path: '/', component: App },
-    {
-        path: '/old',
+    { path: '/', component: Home },
+    { path: '/admin', component: AdminPanel },
+    { path: '/old',
         redirect: () => {
             window.location.href = '/old-site/index.html';
             return '';
