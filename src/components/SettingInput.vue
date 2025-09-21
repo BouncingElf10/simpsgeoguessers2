@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 
 const props = defineProps({
     modelValue: String,
@@ -11,18 +11,34 @@ const props = defineProps({
     buttonText: {
         type: String,
         default: "Submit"
+    },
+    storageKey: {
+        type: String,
+        default: "setting-input"
     }
 });
 
 const emit = defineEmits(["update:modelValue", "submit"]);
 
-const localValue = ref(props.modelValue);
+const localValue = ref("");
+
+onMounted(() => {
+    const saved = localStorage.getItem(props.storageKey);
+    if (saved !== null) {
+        localValue.value = saved;
+        emit("update:modelValue", saved);
+    } else {
+        localValue.value = props.modelValue || "";
+    }
+});
 
 watch(() => props.modelValue, (newVal) => {
     localValue.value = newVal;
 });
 
+
 watch(localValue, (newVal) => {
+    localStorage.setItem(props.storageKey, newVal);
     emit("update:modelValue", newVal);
 });
 

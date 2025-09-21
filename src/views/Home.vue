@@ -601,6 +601,7 @@ onUnmounted(() => {
                 placeholder="Enter your name..."
                 button-text="Submit"
                 @submit="submitScore"
+                storage-key="username-setting"
             />
             <span> {{ statusMessage }} </span>
             <NavBar class="restart-bar">
