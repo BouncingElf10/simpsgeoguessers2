@@ -66,7 +66,10 @@ const currentPopupOpen = ref(null);
 const selectedMap = ref("SIMPS SMP Season 2")
 const selectedMapId = ref(getMapIdFromName(selectedMap.value))
 const showDebug = ref(false);
+
 const playerName = ref("");
+const hasSumbmitted = ref(false);
+const statusMessage = ref("");
 
 const DEFAULT_SETTINGS = {
     hasTimer: true,
@@ -211,6 +214,8 @@ function startGame() {
     isFullscreen.value = false;
     isFinished.value = false;
     gameFinished.value = false;
+    hasSumbmitted.value = false;
+    statusMessage.value = "";
     mapRef.value.clearMap()
     mapRef.value.defaultBounds()
     continueButonName.value = "Continue"
@@ -238,6 +243,8 @@ function continueGame() {
         continueButonName.value = "Restart"
         return;
     }
+    hasSumbmitted.value = false;
+    statusMessage.value = "";
     mapRef.value.lockMap(false)
     getRandomPlace(getMapIdFromName(selectedMap.value))
     round.value++
@@ -466,7 +473,7 @@ const debugSections = computed(() => ({
         JSON: localStorage.getItem(SETTINGS_KEY),
     }
 }));
-const statusMessage = ref("");
+
 async function submitScore() {
     try {
         const res = await fetch('/api/submit', {
@@ -489,6 +496,10 @@ async function submitScore() {
         statusMessage.value = 'Failed to connect to server';
     }
 }
+watch(statusMessage, (newStatus) => {
+    if (newStatus === "") return;
+    hasSumbmitted.value = true;
+})
 
 onMounted(() => {
     loadSettings();
@@ -602,8 +613,9 @@ onUnmounted(() => {
                 button-text="Submit"
                 @submit="submitScore"
                 storage-key="username-setting"
+                :hasSubmitted="hasSumbmitted"
             />
-            <span> {{ statusMessage }} </span>
+            <span style="margin-top: 10px"> {{ statusMessage }} </span>
             <NavBar class="restart-bar">
                 <NavItem class="guess-item" @click="startGame">Restart Game</NavItem>
             </NavBar>

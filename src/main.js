@@ -24,10 +24,11 @@ const app = createApp(App);
 app.use(router);
 app.mount('#app');
 
-//TODO: if success submit then stop user from submitting again
 //TODO: if not default setting no submit
+//TODO: clean usernames
+//TODO: style scroll bar
 //TODO: fix image loading lag
-//TODO:
+//TODO: legal and credit pages
 //TODO: leaderboard
 //TODO: mobile controls -- maybe
 //TODO: sound effects -- egh maybe

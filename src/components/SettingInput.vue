@@ -15,7 +15,8 @@ const props = defineProps({
     storageKey: {
         type: String,
         default: "setting-input"
-    }
+    },
+    hasSubmitted: Boolean
 });
 
 const emit = defineEmits(["update:modelValue", "submit"]);
@@ -59,7 +60,7 @@ function handleSubmit() {
                 :placeholder="placeholder"
                 @keyup.enter="handleSubmit"
             />
-            <button class="submit-btn" @click="handleSubmit">{{ buttonText }}</button>
+            <button v-if="!props.hasSubmitted" class="submit-btn" @click="handleSubmit">{{ buttonText }}</button>
         </div>
     </div>
 </template>

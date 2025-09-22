@@ -25,6 +25,7 @@ export default async function handler(req, res) {
 
     try {
         const { username, score } = req.body;
+        if (score <= 10) return res.status(400).json({ error: 'At least get some score before submitting...' });
         const ip = getIp(req);
         const ipHash = hashIp(ip);
         
