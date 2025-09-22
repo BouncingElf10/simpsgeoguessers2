@@ -70,6 +70,7 @@ const showDebug = ref(false);
 const playerName = ref("");
 const hasSumbmitted = ref(false);
 const statusMessage = ref("");
+const hasDefaultSettings = ref(false);
 
 const DEFAULT_SETTINGS = {
     hasTimer: true,
@@ -77,8 +78,6 @@ const DEFAULT_SETTINGS = {
     invertedMode: false,
     bwMode: false,
     pixelatedMode: false,
-    selectedMap: "SIMPS SMP Season 2",
-    showDebug: false,
     countdownTimeSeconds: 3,
     timeToGuessSeconds: 30,
     maxRounds: 5,
@@ -86,6 +85,7 @@ const DEFAULT_SETTINGS = {
 const SETTINGS_KEY = "simps_geoguesser_settings";
 
 function saveSettings() {
+    hasDefaultSettings.value = checkIfDefaultSettings();
     localStorage.setItem(SETTINGS_KEY, JSON.stringify({
         hasTimer: hasTimer.value,
         blinkMode: blinkMode.value,
@@ -125,7 +125,6 @@ function loadSettings() {
 
 function resetToDefaults() {
     closePopup()
-    selectedMap.value = DEFAULT_SETTINGS.selectedMap;
     hasTimer.value = DEFAULT_SETTINGS.hasTimer;
     blinkMode.value = DEFAULT_SETTINGS.blinkMode;
     invertedMode.value = DEFAULT_SETTINGS.invertedMode;
@@ -139,6 +138,21 @@ function resetToDefaults() {
         openPopup(popups.Settings)
     }, 50);
 }
+
+function checkIfDefaultSettings() {
+  const keys = [
+    "hasTimer",
+    "blinkMode",
+    "invertedMode",
+    "bwMode",
+    "pixelatedMode",
+    "countdownTimeSeconds",
+    "timeToGuessSeconds",
+    "maxRounds",
+  ];
+  return keys.every(key => DEFAULT_SETTINGS[key] === eval(key + ".value"));
+}
+
 watch([hasTimer, blinkMode, invertedMode, bwMode, pixelatedMode, selectedMap, showDebug, countdownTimeSeconds, timeToGuessSeconds, maxRounds], saveSettings);
 
 watch(selectedMap, (newVal) => {
@@ -408,9 +422,6 @@ function calculatePoints(currentCoords, guessCoords, timeTaken) {
     const maxBonus = 2;
     const bonus = 1 + (maxBonus - 1) * Math.exp(-timeTaken);
     score.value = points.value * bonus / 2;
-    if (score.value > 90) {
-        score.value = -1;
-    }
 }
 
 function handleMapClick(coords) {
@@ -470,6 +481,7 @@ const debugSections = computed(() => ({
         guessMap: mcToMap(guessCoords.value?.x || 0, guessCoords.value?.y || 0, alignmentData.value)
     },
     LocalStorage: {
+        defaultSettings: hasDefaultSettings.value,
         JSON: localStorage.getItem(SETTINGS_KEY),
     }
 }));
@@ -481,13 +493,16 @@ async function submitScore() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 username: playerName.value,
-                score: Number(score.value)
+                score: Number(totalScore.value),
+                totalTime: Number(totalTimeTaken.value),
+                points: Number(totalPoints.value),
+                map: Number(selectedMapId.value),
             })
         });
 
         const data = await res.json();
         if (res.ok) {
-            statusMessage.value = `Submitted: ${data.entry.username} (${data.entry.score})`;
+            statusMessage.value = `Submitted: ${data.entry.username}   (${data.entry.score})`;
         } else {
             statusMessage.value = `Error: ${data.error}`;
         }

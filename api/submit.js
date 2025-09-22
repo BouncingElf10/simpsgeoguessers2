@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
-        const { username, score } = req.body;
+        const { username, score, totalTime, points, map } = req.body;
         if (score <= 10) return res.status(400).json({ error: 'At least get some score before submitting...' });
         const ip = getIp(req);
         const ipHash = hashIp(ip);
@@ -41,7 +41,7 @@ export default async function handler(req, res) {
         if (submissions === 1) await redis.expire(rateKey, 60);
         if (submissions > 5) return res.status(429).json({ error: 'Too many submissions' });
 
-        const entry = { username, score, createdAt: Date.now() };
+        const entry = { username, score, totalTime, points, map, createdAt: Date.now() };
         await redis.lpush('leaderboard', JSON.stringify(entry));
 
         const recentItem = JSON.stringify({ username, score, createdAt: Date.now(), ipHash });
