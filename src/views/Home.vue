@@ -71,6 +71,7 @@ const playerName = ref("");
 const hasSumbmitted = ref(false);
 const statusMessage = ref("");
 const hasDefaultSettings = ref(false);
+const isSubmitting = ref(false);
 
 
 const DEFAULT_SETTINGS = {
@@ -488,6 +489,8 @@ const debugSections = computed(() => ({
 }));
 
 async function submitScore() {
+    isSubmitting.value = true;
+    statusMessage.value = '';
     try {
         const res = await fetch('/api/submit', {
             method: 'POST',
@@ -511,6 +514,7 @@ async function submitScore() {
         console.error('Error submitting score:', e);
         statusMessage.value = 'Failed to connect to server';
     }
+    isSubmitting.value = false;
 }
 watch(statusMessage, (newStatus) => {
     if (newStatus === "") return;
@@ -622,7 +626,9 @@ onUnmounted(() => {
 
                 </ul>
             </div>
+            <InfoText v-if="!hasDefaultSettings" variant="subtitle">You must have default settings to submit a score!</InfoText>
             <SettingInput
+                v-else
                 v-model="playerName"
                 label="Save your score"
                 placeholder="Enter your name..."
@@ -631,7 +637,10 @@ onUnmounted(() => {
                 storage-key="username-setting"
                 :hasSubmitted="hasSumbmitted"
             />
-            <span style="margin-top: 10px"> {{ statusMessage }} </span>
+            <span v-if="isSubmitting" class="loading-dots" style="margin-top: 10px;">
+                Submitting score<span class="dots"></span>
+            </span>
+            <span v-else style="margin-top: 10px;">{{ statusMessage }}</span>
             <NavBar class="restart-bar">
                 <NavItem class="guess-item" @click="startGame">Restart Game</NavItem>
             </NavBar>
@@ -648,7 +657,8 @@ onUnmounted(() => {
         </InfoComponent>
         <transition name="fade">
             <InfoComponent v-if="isPopupOpen(popups.Settings)" class="settings-menu">
-                <InfoText variant="title" class="settings-title">Settings</InfoText>
+                <InfoText v-if="hasDefaultSettings" variant="title" class="settings-title">Settings</InfoText>
+                <InfoText v-else variant="title" class="settings-title">Settings (can't submit score if not default values)</InfoText>
 
                 <div class="settings-section">
                     <InfoText variant="subtitle">Game Options</InfoText>
@@ -760,6 +770,18 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.loading-dots .dots::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+    0%   { content: ''; }
+    25%  { content: '.'; }
+    50%  { content: '..'; }
+    75%  { content: '...'; }
+    100% { content: ''; }
+}
 
 .styled-link {
     color: #4da6ff;

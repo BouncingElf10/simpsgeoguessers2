@@ -60,12 +60,37 @@ function handleSubmit() {
                 :placeholder="placeholder"
                 @keyup.enter="handleSubmit"
             />
-            <button v-if="!props.hasSubmitted" class="submit-btn" @click="handleSubmit">{{ buttonText }}</button>
+            <transition name="submit-btn">
+                <button
+                    v-if="!props.hasSubmitted"
+                    class="submit-btn"
+                    @click="handleSubmit">
+                    {{ buttonText }}
+                </button>
+            </transition>
         </div>
     </div>
 </template>
 
+
 <style scoped>
+.submit-btn-enter-active, /* BEING USED */
+.submit-btn-leave-active {
+    transition: all 0.4s ease;
+}
+
+.submit-btn-enter-from,
+.submit-btn-leave-to {
+    opacity: 0;
+    transform: scale(0.8) translateX(20px);
+}
+
+.submit-btn-enter-to,
+.submit-btn-leave-from {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+}
+
 .setting-input {
     display: flex;
     flex-direction: column;

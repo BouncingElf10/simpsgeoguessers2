@@ -24,9 +24,6 @@ const app = createApp(App);
 app.use(router);
 app.mount('#app');
 
-
-//TODO: add loading to submit screen
-//TODO: if not default setting no submit
 //TODO: clean usernames
 //TODO: style scroll bar
 //TODO: legal and credit pages
