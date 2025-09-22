@@ -72,6 +72,7 @@ const hasSumbmitted = ref(false);
 const statusMessage = ref("");
 const hasDefaultSettings = ref(false);
 
+
 const DEFAULT_SETTINGS = {
     hasTimer: true,
     blinkMode: false,

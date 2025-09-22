@@ -43,6 +43,7 @@
 
 <template>
     <div class="map-image-wrapper" v-bind="$attrs">
+        <span v-if="!imageUrl" class="loading-text">Image is Loading</span>
         <img
             class="background-image"
             :src="imageUrl"
@@ -59,6 +60,22 @@
 </template>
 
 <style scoped>
+
+.map-image-wrapper {
+    z-index: -1;
+}
+
+.loading-text {
+    font-size: 2em;
+    color: #555;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Barlow', sans-serif;
+    z-index: 1;
+}
+
 .background-image {
     width: 100%;
     height: 100%;
