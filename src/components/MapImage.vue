@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { defineProps } from 'vue'
+    import { defineProps, ref, watchEffect } from 'vue'
 
     const props = defineProps({
         mapId: {
@@ -16,17 +16,28 @@
         blink: Boolean,
     })
 
-    const images = import.meta.glob('../assets/maps/simps*/images/*.{jpg,png}', { eager: true });
+    const images = import.meta.glob('../assets/maps/simps*/images/*.{jpg,png}');
 
-    function getImageUrl(id: number, mapId: number): string {
-        const pngPath = `../assets/maps/simps${mapId}/images/${id}.png`;
-        const jpgPath = `../assets/maps/simps${mapId}/images/image${id}.jpg`;
+    async function getImageUrl(id: number, mapId: number): Promise<string> {
+      const pngPath = `../assets/maps/simps${mapId}/images/${id}.png`;
+      const jpgPath = `../assets/maps/simps${mapId}/images/image${id}.jpg`;
 
-        if (images[pngPath]) return images[pngPath].default;
-        if (images[jpgPath]) return images[jpgPath].default;
-
-        return '';
+      if (images[pngPath]) {
+        const mod = await images[pngPath]();
+        return mod.default;
+      }
+      if (images[jpgPath]) {
+        const mod = await images[jpgPath]();
+        return mod.default;
+      }
+      return '';
     }
+
+    const imageUrl = ref<string>('')
+
+    watchEffect(async () => {
+      imageUrl.value = await getImageUrl(props.imageId, props.mapId)
+    })
 
 </script>
 
@@ -34,7 +45,7 @@
     <div class="map-image-wrapper" v-bind="$attrs">
         <img
             class="background-image"
-            :src="getImageUrl(props.imageId, props.mapId)"
+            :src="imageUrl"
             alt="image"
             :style="{
         filter: (props.pixelated ? 'url(#pixelate) ' : '') +

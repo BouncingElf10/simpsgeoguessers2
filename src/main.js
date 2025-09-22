@@ -27,7 +27,6 @@ app.mount('#app');
 //TODO: if not default setting no submit
 //TODO: clean usernames
 //TODO: style scroll bar
-//TODO: fix image loading lag
 //TODO: legal and credit pages
 //TODO: leaderboard
 //TODO: mobile controls -- maybe
