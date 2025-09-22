@@ -24,10 +24,10 @@ const app = createApp(App);
 app.use(router);
 app.mount('#app');
 
-//TODO: beg for them stars
 //TODO: if success submit then stop user from submitting again
 //TODO: if not default setting no submit
 //TODO: fix image loading lag
+//TODO:
 //TODO: leaderboard
 //TODO: mobile controls -- maybe
 //TODO: sound effects -- egh maybe

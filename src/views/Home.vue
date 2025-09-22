@@ -613,6 +613,7 @@ onUnmounted(() => {
             <InfoText variant="body" class="credits">
                 Developed by: <a href="https://github.com/BouncingElf10">BouncingElf10</a>  |  Images taken by: <a href="https://www.youtube.com/@tj_giggles/videos">TJ_Giggles</a>
             </InfoText>
+            <InfoText variant="body"><a class="styled-link" href="https://github.com/BouncingElf10/simpsgeoguessers2" target="_blank"><br>If you liked this project make sure to give it a star on Github!</a></InfoText>
             <NavBar class="start-bar">
                 <NavItem class="guess-item" @click="startGame">Start Game</NavItem>
             </NavBar>
