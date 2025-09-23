@@ -980,6 +980,8 @@ onUnmounted(() => {
     height: fit-content;
     width: 30%;
     padding: 15px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 .start-bar {
@@ -1104,5 +1106,15 @@ onUnmounted(() => {
     pointer-events: none;
     opacity: 0.5;
     background-color: #888;
+}
+</style>
+
+<style>
+*::-webkit-scrollbar {
+    display: none;
+}
+* {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 </style>
