@@ -708,28 +708,25 @@ onUnmounted(() => {
                 <InfoText variant="title" class="settings-title">Legal</InfoText>
 
                 <div class="settings-section">
-                    <InfoText variant="subtitle">Privacy</InfoText>
+                    <InfoText variant="subtitle"><b>Privacy Policy</b></InfoText>
                     <InfoText variant="body">
-                        • We save your username, score, and time so the leaderboard works.<br>
-                        • Your IP isn’t stored directly, we scramble it into a hash just to stop spam/cheating.<br>
-                        • Recent submissions hang around for a few days, leaderboards stick around longer.<br>
-                        • Offensive usernames get filtered out automatically.
-                    </InfoText>
-                </div>
+                        This website is a simple project of mine, and while I do not collect a lot of data, I do collect some.
+                        <br>
+                        <br><b>Information Collected:</b>
+                        <br>&nbsp; &nbsp; • IP Address – collected only when you submit a score. Used to prevent things like spam, cheating, and offensive usernames.
+                        <br>&nbsp; &nbsp; • Username, Score, Time, etc. etc. – whatever you type when submitting a score is saved to the leaderboard.
+                        <br><b>How Information Is Used:</b>
+                        <br>&nbsp; &nbsp; • IP addresses are checked to enforce bans and keep the leaderboard fair.
+                        <br>&nbsp; &nbsp; • Usernames and scores are displayed publicly on the leaderboard.
+                        <br>&nbsp; &nbsp; • No other personal data is collected.
+                        <br><b>Sharing of Data:</b>
+                        <br>&nbsp; &nbsp; • Your information is not sold, shared, or used for advertising.
+                        <br>&nbsp; &nbsp; • Only me (BouncingElf10) can view and manage this data.
+                        <br><b>Your Choices:</b>
+                        <br>&nbsp; &nbsp; • If you don’t want your information collected, don’t submit a score.
+                        <br>&nbsp; &nbsp; • If you submitted a score and want it removed, contact me (BouncingElf10).
 
-                <div class="settings-section">
-                    <InfoText variant="subtitle">Fair Play</InfoText>
-                    <InfoText variant="body">
-                        • Please don't spam, cheat, or try to break stuff.<br>
-                        • If you do, you might get blocked from submitting scores.<br>
-                    </InfoText>
-                </div>
-
-                <div class="settings-section">
-                    <InfoText variant="subtitle">Liability</InfoText>
-                    <InfoText variant="body">
-                        • This is just a hobby project, it comes with no promises.<br>
-                        • If something goes wrong, sorry :D
+                        This privacy policy may change if the site’s features change. Updates will be posted here.
                     </InfoText>
                 </div>
 

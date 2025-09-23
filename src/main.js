@@ -24,7 +24,6 @@ const app = createApp(App);
 app.use(router);
 app.mount('#app');
 
-//TODO: legal and credit pages
 //TODO: leaderboard
 //TODO: mobile controls -- maybe
 //TODO: sound effects -- egh maybe
