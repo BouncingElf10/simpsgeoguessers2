@@ -708,8 +708,28 @@ onUnmounted(() => {
                 <InfoText variant="title" class="settings-title">Legal</InfoText>
 
                 <div class="settings-section">
+                    <InfoText variant="subtitle">Privacy</InfoText>
                     <InfoText variant="body">
-                        blah blah blah legal stuff goes here
+                        • We save your username, score, and time so the leaderboard works.<br>
+                        • Your IP isn’t stored directly, we scramble it into a hash just to stop spam/cheating.<br>
+                        • Recent submissions hang around for a few days, leaderboards stick around longer.<br>
+                        • Offensive usernames get filtered out automatically.
+                    </InfoText>
+                </div>
+
+                <div class="settings-section">
+                    <InfoText variant="subtitle">Fair Play</InfoText>
+                    <InfoText variant="body">
+                        • Please don't spam, cheat, or try to break stuff.<br>
+                        • If you do, you might get blocked from submitting scores.<br>
+                    </InfoText>
+                </div>
+
+                <div class="settings-section">
+                    <InfoText variant="subtitle">Liability</InfoText>
+                    <InfoText variant="body">
+                        • This is just a hobby project, it comes with no promises.<br>
+                        • If something goes wrong, sorry :D
                     </InfoText>
                 </div>
 
@@ -722,12 +742,44 @@ onUnmounted(() => {
         </transition>
         <transition name="fade">
             <InfoComponent v-if="isPopupOpen(popups.Credits)" class="settings-menu">
-                <InfoText variant="title" class="settings-title" @click="showDebug = true">Credits</InfoText>
+                <InfoText variant="title" class="settings-title">Credits</InfoText>
 
                 <div class="settings-section">
+                    <InfoText variant="subtitle">Development</InfoText>
                     <InfoText variant="body">
-                        Developed by <a href="https://github.com/BouncingElf10">BouncingElf10</a><br>
-                        Images by <a href="https://www.youtube.com/@tj_giggles/videos">TJ_Giggles</a>
+                        <a class="styled-link" href="https://github.com/BouncingElf10" target="_blank">
+                            BouncingElf10
+                        </a> – Lead developer, game logic, and UI design
+                    </InfoText>
+                </div>
+
+                <div class="settings-section">
+                    <InfoText variant="subtitle">Map Images</InfoText>
+                    <InfoText variant="body">
+                        <a class="styled-link" href="https://www.youtube.com/@tj_giggles/videos" target="_blank">
+                            TJ_Giggles
+                        </a> – Helped me get the Minecraft screenshots
+                    </InfoText>
+                </div>
+
+                <div class="settings-section">
+                    <InfoText variant="subtitle">Special Thanks</InfoText>
+                    <InfoText variant="body">
+                        • SIMPS SMP community <3 <br>
+                        • Vue.js <br>
+                        • and prolly more
+                    </InfoText>
+                </div>
+
+                <div class="settings-section">
+                    <InfoText variant="subtitle">Project Links</InfoText>
+                    <InfoText variant="body" class="credits">
+                        <a class="styled-link" href="https://github.com/BouncingElf10/simpsgeoguessers2" target="_blank">
+                            GitHub Repository
+                        </a><br>
+                        <a class="styled-link" href="https://github.com/BouncingElf10" target="_blank">
+                            Developer Profile
+                        </a>
                     </InfoText>
                 </div>
 
