@@ -204,7 +204,8 @@ const popups = {
     Settings: 0,
     Credits: 1,
     Legal: 2,
-    Layers: 3
+    Layers: 3,
+    Leaderboard: 4
 }
 
 function closePopup() {
@@ -217,6 +218,9 @@ function openPopup(popup) {
         return;
     }
     currentPopupOpen.value = popup;
+    if (popup === popups.Leaderboard) {
+        fetchLeaderboard();
+    }
 }
 
 function isPopupOpen(popup) {
@@ -422,7 +426,7 @@ function calculatePoints(currentCoords, guessCoords, timeTaken) {
         points.value = Math.max(0, Math.floor(100 - distance.value));
     }
     const maxBonus = 2;
-    const bonus = 1 + (maxBonus - 1) * Math.exp(-timeTaken);
+    const bonus = 1 + (maxBonus - 1) * Math.exp(-timeTaken) * 25;
     score.value = points.value * bonus / 2;
 }
 
@@ -530,6 +534,35 @@ watch(statusMessage, (newStatus) => {
     hasSumbmitted.value = true;
 })
 
+const leaderboard = ref([]);
+const selectedLeaderboardSeason = ref("SIMPS SMP Season 2");
+const leaderboardCache = ref({});
+const loadingLeaderboard = ref(false);
+
+async function fetchLeaderboard(force = false) {
+    const mapId = getMapIdFromName(selectedLeaderboardSeason.value);
+
+    if (!force && leaderboardCache.value[mapId]) {
+        leaderboard.value = leaderboardCache.value[mapId];
+        return;
+    }
+
+    loadingLeaderboard.value = true;
+    try {
+        const res = await fetch(`/api/submit?map=${mapId}`);
+        const data = await res.json();
+        leaderboard.value = data.leaderboard || [];
+
+        leaderboardCache.value[mapId] = leaderboard.value;
+    } catch (e) {
+        console.error("Failed to load leaderboard", e);
+        leaderboard.value = [];
+    } finally {
+        loadingLeaderboard.value = false;
+    }
+}
+
+
 onMounted(() => {
     loadSettings();
     window.addEventListener("keydown", handleKeydown);
@@ -558,7 +591,7 @@ onUnmounted(() => {
         </div>
         <div class="navtopbar-list">
             <NavBar>
-                <NavItem>
+                <NavItem @click="openPopup(popups.Leaderboard)">
                     <LeaderboardIcon width="32" height="32"/>
                 </NavItem>
                 <NavItem @click="openPopup(popups.Layers)">
@@ -810,6 +843,55 @@ onUnmounted(() => {
                 </div>
             </InfoComponent>
         </transition>
+        <transition name="fade">
+            <InfoComponent v-if="isPopupOpen(popups.Leaderboard)" class="leaderboard-panel settings-menu">
+                <InfoText variant="title" class="settings-title">Leaderboard</InfoText>
+
+                <div class="settings-section" style="margin-top: 0;">
+                    <InfoText variant="subtitle">Season</InfoText>
+                    <SettingDropdown
+                        label="Season"
+                        :options="['SIMPS SMP Season 2', 'SIMPS SMP Season 1']"
+                        v-model="selectedLeaderboardSeason"
+                        @update:modelValue="fetchLeaderboard"
+                    />
+                </div>
+
+                <div class="settings-section" style="margin-top: 0; padding: 20px;">
+                    <InfoText variant="subtitle">Top Players</InfoText>
+                    <div v-if="loadingLeaderboard" class="leaderboard-loading">
+                        Loading leaderboard...
+                    </div>
+                    <table v-else-if="leaderboard.length" class="styled-table" style="border-radius: 7px;">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Username</th>
+                            <th>Score</th>
+                            <th>Points</th>
+                            <th>Time</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="(entry, idx) in leaderboard" :key="entry.username + entry.createdAt">
+                            <td>{{ idx + 1 }}</td>
+                            <td>{{ entry.username }}</td>
+                            <td>{{ entry.score.toFixed(2) }}</td>
+                            <td>{{ entry.points }}</td>
+                            <td>{{ entry.totalTime.toFixed(1) }}s</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <InfoText v-else variant="body">No scores yet for this season.</InfoText>
+                </div>
+
+                <div class="settings-actions">
+                    <NavBar class="settings-bar">
+                        <NavItem class="guess-item" @click="closePopup()">Close</NavItem>
+                    </NavBar>
+                </div>
+            </InfoComponent>
+        </transition>
 
         <div class="debug-overlay" v-if="showDebug">
             <div v-for="(data, title) in debugSections" :key="title" class="debug-section">
@@ -829,6 +911,67 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.leaderboard-loading {
+    text-align: center;
+    font-size: 1.1em;
+    font-weight: 500;
+    padding: 20px;
+    color: #ffffff;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0.5; }
+}
+
+.leaderboard-panel {
+    background: rgba(0,0,0,0.75);
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 20px 30px;
+    max-width: 80%;
+    margin: 40px auto;
+    font-family: 'Barlow', sans-serif;
+}
+
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: 'Barlow', sans-serif;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 10px 12px;
+    text-align: left;
+}
+
+.styled-table th {
+    background: rgba(255,255,255,0.1);
+    font-weight: 600;
+}
+
+.styled-table tr {
+    transition: background 0.3s ease;
+}
+
+.styled-table tr:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.settings-section {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    font-family: 'Barlow', sans-serif;
+}
+
 .loading-dots .dots::after {
     content: '';
     animation: dots 1.5s steps(4, end) infinite;
