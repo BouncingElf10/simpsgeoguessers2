@@ -1,6 +1,7 @@
 import { Redis } from '@upstash/redis';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
+import Filter from 'leo-profanity';
 dotenv.config({ path: '.env.local' });
 
 const redis = Redis.fromEnv();
@@ -20,12 +21,21 @@ function getIp(req) {
     );
 }
 
+Filter.loadDictionary('en');
+function isCleanUsername(username) {
+    return !Filter.check(username);
+}
+
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
         const { username, score, totalTime, points, map } = req.body;
         if (score <= 10) return res.status(400).json({ error: 'At least get some score before submitting...' });
+        if (!isCleanUsername(username)) {
+            return res.status(400).json({ error: 'really dude?' });
+        }
         const ip = getIp(req);
         const ipHash = hashIp(ip);
         

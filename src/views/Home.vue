@@ -516,12 +516,14 @@ async function submitScore() {
     }
     isSubmitting.value = false;
 }
-watch(playerName, (newName) => {
-  playerName.value = newName
-      .trim()
-      .replace(/[^A-Za-z0-9_]/g, '')
-      .substring(0, 10);
-});
+
+function cleanUsername(e) {
+    const raw = e.target.value;
+    playerName.value = raw
+        .trim()
+        .replace(/[^A-Za-z0-9_]/g, "")
+        .substring(0, 20);
+}
 
 watch(statusMessage, (newStatus) => {
     if (newStatus === "") return;
@@ -643,6 +645,7 @@ onUnmounted(() => {
                 @submit="submitScore"
                 storage-key="username-setting"
                 :hasSubmitted="hasSumbmitted"
+                @input="cleanUsername"
             />
             <span v-if="isSubmitting" class="loading-dots" style="margin-top: 10px;">
                 Submitting score<span class="dots"></span>
