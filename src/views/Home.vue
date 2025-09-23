@@ -516,6 +516,13 @@ async function submitScore() {
     }
     isSubmitting.value = false;
 }
+watch(playerName, (newName) => {
+  playerName.value = newName
+      .trim()
+      .replace(/[^A-Za-z0-9_]/g, '')
+      .substring(0, 10);
+});
+
 watch(statusMessage, (newStatus) => {
     if (newStatus === "") return;
     hasSumbmitted.value = true;

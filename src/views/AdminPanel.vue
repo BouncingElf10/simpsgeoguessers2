@@ -147,7 +147,7 @@ body {
     color: #ffffff;
     border-radius: 16px;
     padding: 20px 30px;
-    max-width: 900px;
+    max-width: 80%;
     margin: 40px auto;
     font-family: 'Barlow', sans-serif;
 }
