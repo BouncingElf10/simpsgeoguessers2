@@ -322,19 +322,22 @@ function placedGuess() {
     }
 }
 
-async function getRandomPlace(selectedMapId) {
-    const PlacesJson = await import(new URL(`../assets/maps/simps${selectedMapId}/places.json`, import.meta.url)).then(m => m.default);
+import places1 from "@/assets/maps/simps1/places.json";
+import places2 from "@/assets/maps/simps2/places.json";
 
-    const randomIndex = Math.floor(Math.random() * PlacesJson.length);
-    // const randomIndex = 0
-    const randomPlace = PlacesJson[randomIndex];
+const placesByMap = {
+  1: places1,
+  2: places2,
+};
 
-    currentId.value = randomPlace.id;
-    currentCoords.value = {
-        x: randomPlace.coords[0],
-        y: randomPlace.coords[1],
-    };
-    currentPlaceName.value = randomPlace.name;
+function getRandomPlace(selectedMapId) {
+  const PlacesJson = placesByMap[selectedMapId];
+  const randomIndex = Math.floor(Math.random() * PlacesJson.length);
+  const randomPlace = PlacesJson[randomIndex];
+
+  currentId.value = randomPlace.id;
+  currentCoords.value = { x: randomPlace.coords[0], y: randomPlace.coords[1] };
+  currentPlaceName.value = randomPlace.name;
 }
 
 function startCountdown(seconds) {
