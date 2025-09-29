@@ -420,23 +420,20 @@ function finalGuessTime(seconds) {
 }
 
 function calculatePoints(currentCoords, guessCoords, timeTaken) {
-    const xDiff = currentCoords.x - guessCoords.x;
-    const yDiff = currentCoords.y - guessCoords.y;
-    distance.value = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
-    if (distance.value <= 10) {
-        points.value = 100;
-    } else {
-        points.value = Math.max(0, Math.floor(100 - distance.value));
-    }
-    const maxBonus = 2;
-    const bonus = 1 + (maxBonus - 1) * Math.exp(-timeTaken) * 25;
-    score.value = points.value * bonus / 2;
+  const xDiff = currentCoords.x - guessCoords.x;
+  const yDiff = currentCoords.y - guessCoords.y;
+  distance.value = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+
+  const maxPoints = 100;
+  const decayRate = 0.01;
+  points.value = Math.floor(maxPoints * Math.exp(-decayRate * distance.value));
+
+  const maxBonus = 1.5;
+  const bonus = 1 + (maxBonus - 1) * Math.exp(-0.2 * timeTaken);
+
+  score.value = Math.floor(points.value * bonus);
 }
 
-function handleMapClick(coords) {
-    const mc = mapToMc(coords.x, coords.y, alignmentData.value);
-    guessCoords.value = { x: Math.floor(mc.x), y: Math.floor(mc.y) };
-}
 
 function handleKeydown(e) {
     if (e.code === "Space") {
