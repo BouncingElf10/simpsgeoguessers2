@@ -22,8 +22,14 @@ function getIp(req) {
 }
 
 Filter.loadDictionary('en');
+
 function isCleanUsername(username) {
-    return !Filter.check(username);
+    const normalized = username.toLowerCase().replace(/_/g, '');
+    const foundWord = Filter.list().find(word => normalized.includes(word));
+    return {
+        isClean: !foundWord,
+        foundProfanity: foundWord
+    };
 }
 
 export default async function handler(req, res) {
@@ -55,8 +61,9 @@ export default async function handler(req, res) {
         try {
             const { username, score, totalTime, points, map } = req.body;
             if (score <= 10) return res.status(400).json({ error: 'At least get some score before submitting...' });
-            if (!isCleanUsername(username)) {
-                return res.status(400).json({ error: 'really dude?' });
+            const usernameCheck = isCleanUsername(username);
+            if (!usernameCheck.isClean) {
+                return res.status(400).json({error: `really dude? found -> "${usernameCheck.foundProfanity}"`});
             }
             const ip = getIp(req);
             const ipHash = hashIp(ip);
