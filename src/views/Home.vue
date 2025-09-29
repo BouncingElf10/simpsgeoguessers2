@@ -627,8 +627,8 @@ onUnmounted(() => {
                 <Map @map-click="handleMapClick" ref="mapRef" :mapToMc="mapToMc" :mcToMap="mcToMap"
                      :alignmentData="getAlignmentDataForMap(getMapIdFromName(selectedMap))" :offset="offset" :mapId="selectedMapId"/>
             </div>
-            <NavBar class="guess-bar">
-                <NavItem
+          <NavBar class="guess-bar small-guess-bar">
+          <NavItem
                     :class="{disabled: (!guessCoords.x && !guessCoords.y) || countdown > 0,
                         'guess-item': !hasTimer || timer <= 0,
                         'guess-item-timer': hasTimer && timer > 0
@@ -1125,6 +1125,23 @@ onUnmounted(() => {
   }
 }
 
+@media (orientation: portrait) {
+  .guess-bar {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: calc(100% - 60px) !important;
+    margin: 0;
+    z-index: 1000;
+  }
+
+  .small-guess-bar {
+    width: calc(100% - 60px) !important;
+    font-size: 0.9em;
+    opacity: 0.9;
+  }
+}
+
 .settings-actions {
     display: flex;
     flex-direction: column;
@@ -1267,6 +1284,15 @@ onUnmounted(() => {
     bottom: 0;
 }
 
+@media (orientation: portrait) {
+  .stats-navbar {
+    position: fixed;
+    bottom: 80px;
+    height: auto !important;
+    margin: 0 20px 0 20px;
+  }
+}
+
 .fullscreen-bar {
     opacity: 1 !important;
     z-index: 10000 !important;
@@ -1304,6 +1330,24 @@ onUnmounted(() => {
     transition-delay: 0s, 0.2s, 0.2s;
 }
 
+@media (orientation: portrait) {
+  .normal-wrapper {
+    opacity: 1;
+    width: 100%;
+    height: 50vh;
+    margin: 0;
+    border-radius: 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+  }
+
+  .normal-wrapper:hover {
+    height: 50vh;
+    width: 100%;
+  }
+}
+
 .fullscreen-wrapper {
     position: fixed;
     top: 0;
@@ -1311,6 +1355,17 @@ onUnmounted(() => {
     width: 100vw;
     height: 100vh;
     z-index: 9999;
+}
+
+@media (orientation: portrait) {
+  .fullscreen-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+  }
 }
 
 .navtopbar-list {
@@ -1331,6 +1386,7 @@ onUnmounted(() => {
 .guess-bar {
     margin-right: 5px;
     width: calc(100% - 15px);
+  z-index: 1000;
 }
 .guess-item {
     width: 100%;
