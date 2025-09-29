@@ -24,6 +24,5 @@ const app = createApp(App);
 app.use(router);
 app.mount('#app');
 
-//TODO: leaderboard
+//TODO: fix admin panel
 //TODO: mobile controls -- maybe
-//TODO: sound effects -- egh maybe

@@ -764,8 +764,8 @@ onUnmounted(() => {
                         <br><b>Your Choices:</b>
                         <br>&nbsp; &nbsp; • If you don’t want your information collected, don’t submit a score.
                         <br>&nbsp; &nbsp; • If you submitted a score and want it removed, contact me (BouncingElf10).
-
-                        This privacy policy may change if the site’s features change. Updates will be posted here.
+                        <br>
+                        <br>This privacy policy may change if the site’s features change. Updates will be posted here.
                     </InfoText>
                 </div>
 
