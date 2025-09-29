@@ -1313,12 +1313,13 @@ onUnmounted(() => {
 }
 
 @media (orientation: portrait) {
-  .stats-navbar {
-    position: fixed;
-    bottom: 80px;
-    height: auto !important;
-    margin: 0 20px 0 20px;
-  }
+    .stats-navbar {
+        position: fixed;
+        bottom: 80px;
+        height: auto !important;
+        margin: 0 20px 0 20px;
+        transform: scale(0.5) translate(calc(-50% + 5px), 50%);
+    }
 }
 
 .fullscreen-bar {
