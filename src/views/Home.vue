@@ -611,7 +611,7 @@ onUnmounted(() => {
             </NavBar>
         </div>
         <div class="navtopbar-list">
-            <NavBar>
+            <NavBar style="margin-right: 5px;">
                 <NavItem @click="openPopup(popups.Leaderboard)">
                     <LeaderboardIcon width="32" height="32"/>
                 </NavItem>
@@ -1127,20 +1127,28 @@ onUnmounted(() => {
 }
 
 @media (orientation: portrait) {
-  .guess-bar {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: calc(100% - 60px) !important;
-    margin: 0;
-    z-index: 1000;
-  }
+    .navbar-list {
+        display: flex;
+        top: 0;
+        bottom: auto !important;
+        position: absolute;
+        align-items: flex-end;
+    }
 
-  .small-guess-bar {
-    width: calc(100% - 60px) !important;
-    font-size: 0.9em;
-    opacity: 0.9;
-  }
+    .guess-bar {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: calc(100% - 60px) !important;
+        margin: 0;
+        z-index: 1000;
+    }
+
+    .small-guess-bar {
+        width: calc(100% - 60px) !important;
+        font-size: 0.9em;
+        opacity: 0.9;
+    }
 
 }
 
@@ -1351,7 +1359,15 @@ onUnmounted(() => {
 }
 
 @media (orientation: portrait) {
-  .normal-wrapper {
+    .navtopbar-list {
+        display: flex;
+        top: 0;
+        position: absolute;
+        align-items: flex-start;
+        justify-content: flex-end !important;
+    }
+
+    .normal-wrapper {
     opacity: 1;
     width: 100%;
     height: 50vh;
@@ -1395,6 +1411,7 @@ onUnmounted(() => {
     align-items: flex-start;
     justify-content: center;
     width: 100%;
+    transition: all 0.3s ease;
 }
 .navbar-list {
     display: flex;

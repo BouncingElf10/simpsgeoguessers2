@@ -28,6 +28,11 @@
     font-style: normal;
     line-height: normal;
     vertical-align: middle;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    text-size-adjust: auto;
+    -webkit-text-size-adjust: auto;
 }
 .nav-item:hover {
     background: rgba(41, 41, 41, 0.44);
