@@ -594,13 +594,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="map-container"
-         :class="[tenSecondsLeft && gameStarted && !gameFinished && hasTimer ? 'vignette' : 'vignette-out']">
+    <div class="map-container">
         <MapImage :imageId="currentId" :mapId="selectedMapId" ref="mapImageRef" class="background-map"
                   :pixelated="pixelatedMode" :inverted="invertedMode" :bw="bwMode" :blink="blinkActive"/>
-        <div
-            class="map-blur"
-            :class="{ active: (countdown > 0 && gameStarted && !gameFinished) || (!blinkActive && blinkMode), activesmooth: timer <= 0, 'no-transition': blinkActive}">
+        <div class="map-blur" :class="{ active: (countdown > 0 && gameStarted && !gameFinished) || (!blinkActive && blinkMode), activesmooth: timer <= 0, 'no-transition': blinkActive}">
+        </div>
+        <div class="map-vignette" :class="[tenSecondsLeft && gameStarted && !gameFinished && hasTimer ? 'vignette' : 'vignette-out']">
         </div>
 
         <div class="navbar-list">
@@ -1200,11 +1199,13 @@ onUnmounted(() => {
     object-fit: cover;
 }
 
-.vignette { /* THEY ARE BEING USED */
+.vignette {
     box-shadow: inset 0 0 200px rgba(255, 0, 0, 0.7);
     transition: box-shadow 5s linear;
+    z-index: 100;
 }
-.vignette-out { /* THEY ARE BEING USED */
+
+.vignette-out {
     box-shadow: none !important;
     transition: none !important;
 }
@@ -1221,6 +1222,15 @@ onUnmounted(() => {
     height: 100%;
     pointer-events: none;
     transition: all 0.5s ease;
+}
+
+.map-vignette {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
 }
 
 .map-blur {
