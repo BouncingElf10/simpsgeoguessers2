@@ -431,9 +431,13 @@ function calculatePoints(currentCoords, guessCoords, timeTaken) {
   const maxBonus = 1.5;
   const bonus = 1 + (maxBonus - 1) * Math.exp(-0.2 * timeTaken);
 
-  score.value = Math.floor(points.value * bonus);
+  score.value = points.value * bonus;
 }
 
+function handleMapClick(coords) {
+  const mc = mapToMc(coords.x, coords.y, alignmentData.value);
+  guessCoords.value = { x: Math.floor(mc.x), y: Math.floor(mc.y) };
+}
 
 function handleKeydown(e) {
     if (e.code === "Space") {
