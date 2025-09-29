@@ -88,7 +88,7 @@ export default async function handler(req, res) {
 
             const recentItem = JSON.stringify({ username, score, createdAt: Date.now(), ipHash });
             await redis.lpush('recent_submissions', recentItem);
-            await redis.ltrim('recent_submissions', 0, 499); // keep last 500
+            await redis.ltrim('recent_submissions', 0, 499);
             await redis.expire('recent_submissions', 60 * 60 * 24 * 3); // 3 days
 
             return res.status(200).json({ success: true, entry });
