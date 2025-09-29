@@ -1133,6 +1133,7 @@ onUnmounted(() => {
         bottom: auto !important;
         position: absolute;
         align-items: flex-end;
+        z-index: 10;
     }
 
     .guess-bar {
@@ -1422,10 +1423,6 @@ onUnmounted(() => {
     width: 100vw;
     height: 100vh;
     z-index: 9999;
-}
-
-@media (orientation: landscape) {
-
 }
 
 @media (orientation: portrait) {

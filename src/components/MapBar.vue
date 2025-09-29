@@ -1,8 +1,5 @@
 <script setup lang="ts">
 
-import NavBar from "@/components/NavBar.vue";
-import NavItem from "@/components/NavItem.vue";
-import Map from "@/components/Map.vue";
 </script>
 
 <template>
