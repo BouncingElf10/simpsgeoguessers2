@@ -446,7 +446,7 @@ function calculatePoints(currentCoords, guessCoords, timeTaken) {
   const timeFactor = Math.min(1, timeTaken / 15);
   const precisionBonus = 1 + precisionMax * closeness * timeFactor;
 
-  score.value = Math.floor(points.value * speedBonus * precisionBonus);
+  score.value = points.value * speedBonus * precisionBonus;
 }
 
 
