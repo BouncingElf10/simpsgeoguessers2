@@ -426,13 +426,29 @@ function calculatePoints(currentCoords, guessCoords, timeTaken) {
 
   const maxPoints = 100;
   const decayRate = 0.01;
-  points.value = Math.floor(maxPoints * Math.exp(-decayRate * distance.value));
+
+  if (distance.value <= 10) {
+    points.value = maxPoints;
+  } else {
+    const adjustedDistance = distance.value - 10;
+    points.value = Math.floor(maxPoints * Math.exp(-decayRate * adjustedDistance));
+  }
 
   const maxBonus = 1.5;
-  const bonus = 1 + (maxBonus - 1) * Math.exp(-0.2 * timeTaken);
+  const decay = 0.307;
+  const speedBonus = 1 + (maxBonus - 1) * Math.exp(-decay * timeTaken);
 
-  score.value = points.value * bonus;
+  const precisionMax = 0.6;
+  let closeness = 0;
+  if (distance.value <= 10) {
+    closeness = (10 - distance.value) / 10;
+  }
+  const timeFactor = Math.min(1, timeTaken / 15);
+  const precisionBonus = 1 + precisionMax * closeness * timeFactor;
+
+  score.value = Math.floor(points.value * speedBonus * precisionBonus);
 }
+
 
 function handleMapClick(coords) {
   const mc = mapToMc(coords.x, coords.y, alignmentData.value);
