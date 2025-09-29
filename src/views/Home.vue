@@ -1295,8 +1295,8 @@ onUnmounted(() => {
     left: 50%;
     transform: translate(-50%, -50%);
 
-    width: 40%;
-    height: 40%;
+    width: 50%;
+    height: 50%;
     z-index: 1000;
     background-color: rgba(0, 0, 0, 0.5);
     padding: 30px;
@@ -1306,6 +1306,24 @@ onUnmounted(() => {
     align-items: center;
 }
 
+@media (orientation: portrait) {
+    .starter-info {
+        width: 85%;
+        height: 60%;
+        padding: 20px;
+    }
+
+    .starter-info :deep(.info-title) {
+        font-size: 2em;
+        line-height: 1.2;
+    }
+
+    .starter-info :deep(.info-body) {
+        font-size: 0.9em;
+        line-height: 1.4;
+    }
+}
+
 
 .stats-navbar {
     position: absolute;
@@ -1313,12 +1331,13 @@ onUnmounted(() => {
 }
 
 @media (orientation: portrait) {
-  .stats-navbar {
-    position: fixed;
-    bottom: 80px;
-    height: auto !important;
-    margin: 0 20px 0 20px;
-  }
+    .stats-navbar {
+        position: fixed;
+        bottom: 80px;
+        height: auto !important;
+        margin: 0 20px 0 20px;
+        transform: scale(0.5) translate(calc(-50% + 5px), 50%);
+    }
 }
 
 .fullscreen-bar {
