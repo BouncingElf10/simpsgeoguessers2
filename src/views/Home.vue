@@ -1202,7 +1202,6 @@ onUnmounted(() => {
 .vignette {
     box-shadow: inset 0 0 200px rgba(255, 0, 0, 0.7);
     transition: box-shadow 5s linear;
-    z-index: 100;
 }
 
 .vignette-out {
@@ -1465,7 +1464,7 @@ onUnmounted(() => {
 .guess-bar {
     margin-right: 5px;
     width: calc(100% - 15px);
-  z-index: 1000;
+    z-index: 20;
 }
 .guess-item {
     width: 100%;
