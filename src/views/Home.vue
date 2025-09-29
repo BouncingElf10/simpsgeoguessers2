@@ -594,9 +594,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <MapImage :imageId="currentId" :mapId="selectedMapId" ref="mapImageRef"
-              :pixelated="pixelatedMode" :inverted="invertedMode" :bw="bwMode" :blink="blinkActive"
-              :class="[tenSecondsLeft && gameStarted && !gameFinished && hasTimer ? 'vignette' : 'vignette-out']">
+    <div class="map-container"
+         :class="[tenSecondsLeft && gameStarted && !gameFinished && hasTimer ? 'vignette' : 'vignette-out']">
+        <MapImage :imageId="currentId" :mapId="selectedMapId" ref="mapImageRef" class="background-map"
+                  :pixelated="pixelatedMode" :inverted="invertedMode" :bw="bwMode" :blink="blinkActive"/>
         <div
             class="map-blur"
             :class="{ active: (countdown > 0 && gameStarted && !gameFinished) || (!blinkActive && blinkMode), activesmooth: timer <= 0, 'no-transition': blinkActive}">
@@ -929,7 +930,7 @@ onUnmounted(() => {
             </button>
         </div>
 
-    </MapImage>
+    </div>
 </template>
 
 <style scoped>
@@ -1140,6 +1141,7 @@ onUnmounted(() => {
     font-size: 0.9em;
     opacity: 0.9;
   }
+
 }
 
 .settings-actions {
@@ -1162,6 +1164,24 @@ onUnmounted(() => {
 .fade-leave-to {
     opacity: 0;
     transform: translate(-50%, -45%);
+}
+
+.map-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.background-map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
 }
 
 .map-wrapper img {

@@ -98,4 +98,10 @@
     flex-direction: row;
 }
 
+@media (orientation: portrait) {
+    .background-image {
+        height: 50% !important;
+    }
+}
+
 </style>
