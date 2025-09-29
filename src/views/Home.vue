@@ -1351,12 +1351,12 @@ onUnmounted(() => {
 @media screen and (orientation: landscape) and (max-height: 450px) {
     .normal-wrapper {
         opacity: 1 !important;
-        width: 100%;
+        width: 100% !important;
         height: 100% !important;
     }
     .normal-wrapper:hover {
         opacity: 1;
-        width: 100%;
+        width: 100% !important;
         height: 100% !important;
     }
 }

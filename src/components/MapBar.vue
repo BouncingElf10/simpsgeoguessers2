@@ -25,7 +25,7 @@ import Map from "@/components/Map.vue";
 
 @media screen and (orientation: landscape) and (max-height: 450px) {
     .navbar-guess {
-        width: 40% !important;
+        width: 30% !important;
         height: 100%;
     }
 }
