@@ -322,19 +322,22 @@ function placedGuess() {
     }
 }
 
-async function getRandomPlace(selectedMapId) {
-    const PlacesJson = await import(new URL(`../assets/maps/simps${selectedMapId}/places.json`, import.meta.url)).then(m => m.default);
+import places1 from "@/assets/maps/simps1/places.json";
+import places2 from "@/assets/maps/simps2/places.json";
 
-    const randomIndex = Math.floor(Math.random() * PlacesJson.length);
-    // const randomIndex = 0
-    const randomPlace = PlacesJson[randomIndex];
+const placesByMap = {
+  1: places1,
+  2: places2,
+};
 
-    currentId.value = randomPlace.id;
-    currentCoords.value = {
-        x: randomPlace.coords[0],
-        y: randomPlace.coords[1],
-    };
-    currentPlaceName.value = randomPlace.name;
+function getRandomPlace(selectedMapId) {
+  const PlacesJson = placesByMap[selectedMapId];
+  const randomIndex = Math.floor(Math.random() * PlacesJson.length);
+  const randomPlace = PlacesJson[randomIndex];
+
+  currentId.value = randomPlace.id;
+  currentCoords.value = { x: randomPlace.coords[0], y: randomPlace.coords[1] };
+  currentPlaceName.value = randomPlace.name;
 }
 
 function startCountdown(seconds) {
@@ -700,12 +703,14 @@ onUnmounted(() => {
         </InfoComponent>
         <transition name="fade">
             <InfoComponent v-if="isPopupOpen(popups.Settings)" class="settings-menu">
-                <InfoText v-if="hasDefaultSettings" variant="title" class="settings-title">Settings</InfoText>
-                <InfoText v-else variant="title" class="settings-title">Settings (can't submit score if not default values)</InfoText>
+                <InfoText variant="title" class="settings-title">Settings</InfoText>
 
                 <div class="settings-section">
                     <InfoText variant="subtitle">Game Options</InfoText>
-                    <div class="settings-grid">
+                  <div v-if="!hasDefaultSettings" class="warning-box">
+                    Warning: Custom settings are enabled. You must have default settings to submit scores!
+                  </div>
+                  <div class="settings-grid">
                         <SettingToggle v-model="hasTimer" label="Enable Timer" @update:modelValue="startGame" />
                         <SettingSlider v-model.number="countdownTimeSeconds" label="Countdown" :min="1" :max="10" @update:modelValue="startGame" />
                         <SettingSlider v-model.number="timeToGuessSeconds" label="Guess Time" :min="1" :max="60" @update:modelValue="startGame" />
@@ -1068,6 +1073,7 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     gap: 15px;
+  transition: all 0.3s ease-out;
 }
 
 .settings-grid {
@@ -1075,6 +1081,31 @@ onUnmounted(() => {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 12px 20px;
     align-items: center;
+}
+
+.warning-box {
+  background: rgba(255, 0, 0, 0.2);
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 10px 0;
+  color: #ff4444;
+  font-weight: 500;
+  transform-origin: top;
+  animation: warning-slide-down 0.3s ease-out;
+}
+
+@keyframes warning-slide-down {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+    margin-top: -40px;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+    margin-top: 10px;
+  }
 }
 
 .settings-actions {
