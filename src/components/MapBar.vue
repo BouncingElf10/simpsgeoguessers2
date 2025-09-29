@@ -20,5 +20,13 @@ import Map from "@/components/Map.vue";
     position: absolute;
     align-items: flex-end;
     flex-direction: column;
+    transition: all 0.3s ease-in-out;
+}
+
+@media screen and (orientation: landscape) and (max-height: 450px) {
+    .navbar-guess {
+        width: 40% !important;
+        height: 100%;
+    }
 }
 </style>

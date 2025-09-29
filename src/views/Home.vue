@@ -1324,7 +1324,6 @@ onUnmounted(() => {
     }
 }
 
-
 .stats-navbar {
     position: absolute;
     bottom: 0;
@@ -1347,6 +1346,19 @@ onUnmounted(() => {
 .not-fullscreen-bar {
     opacity: 0;
     z-index: -9999;
+}
+
+@media screen and (orientation: landscape) and (max-height: 450px) {
+    .normal-wrapper {
+        opacity: 1 !important;
+        width: 100%;
+        height: 100% !important;
+    }
+    .normal-wrapper:hover {
+        opacity: 1;
+        width: 100%;
+        height: 100% !important;
+    }
 }
 
 .normal-wrapper {
@@ -1410,6 +1422,10 @@ onUnmounted(() => {
     width: 100vw;
     height: 100vh;
     z-index: 9999;
+}
+
+@media (orientation: landscape) {
+
 }
 
 @media (orientation: portrait) {
