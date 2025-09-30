@@ -420,41 +420,41 @@ function finalGuessTime(seconds) {
 }
 
 function calculatePoints(currentCoords, guessCoords, timeTaken) {
-  const xDiff = currentCoords.x - guessCoords.x;
-  const yDiff = currentCoords.y - guessCoords.y;
-  distance.value = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+    const xDiff = currentCoords.x - guessCoords.x;
+    const yDiff = currentCoords.y - guessCoords.y;
+    distance.value = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
 
-  const maxPoints = 100;
-  const decayRate = 0.01;
+    const maxPoints = 100;
+    const decayRate = 0.01;
 
-  if (distance.value <= 10) {
-    points.value = maxPoints;
-  } else {
-    const adjustedDistance = distance.value - 10;
-    points.value = Math.floor(maxPoints * Math.exp(-decayRate * adjustedDistance));
-  }
+    if (distance.value <= 10) {
+        points.value = maxPoints;
+    } else {
+        const adjustedDistance = distance.value - 10;
+        points.value = Math.floor(maxPoints * Math.exp(-decayRate * adjustedDistance));
+    }
 
-  function timeFactor(t) {
-    const decay = 0.4;
-    const clamped = Math.min(Math.max(t, 0), 25);
-    return 1 + Math.pow((25 - clamped) / 25, decay);
-  }
+    function timeFactor(t) {
+        const decay = 0.4;
+        const clamped = Math.min(Math.max(t, 0), 25);
+        return 1 + Math.pow((25 - clamped) / 25, decay);
+    }
 
-  const precisionMax = 0.6;
-  let closeness = 0;
-  if (distance.value <= 10) {
-    closeness = (10 - distance.value) / 10;
-  }
+    const precisionMax = 0.6;
+    let closeness = 0;
+    if (distance.value <= 10) {
+        closeness = (10 - distance.value) / 10;
+    }
 
-  const precisionBonus = 1 + precisionMax * closeness;
-  score.value = points.value * timeFactor(timeTaken) * precisionBonus;
+    const precisionBonus = 1 + precisionMax * closeness;
+    score.value = points.value * timeFactor(timeTaken) * precisionBonus;
 }
 
 
 
 function handleMapClick(coords) {
-  const mc = mapToMc(coords.x, coords.y, alignmentData.value);
-  guessCoords.value = { x: Math.floor(mc.x), y: Math.floor(mc.y) };
+    const mc = mapToMc(coords.x, coords.y, alignmentData.value);
+    guessCoords.value = { x: Math.floor(mc.x), y: Math.floor(mc.y) };
 }
 
 function handleKeydown(e) {
