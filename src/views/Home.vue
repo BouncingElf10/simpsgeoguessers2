@@ -601,8 +601,9 @@ onUnmounted(() => {
                   :pixelated="pixelatedMode" :inverted="invertedMode" :bw="bwMode" :blink="blinkActive"/>
         <div class="map-blur" :class="{ active: (countdown > 0 && gameStarted && !gameFinished) || (!blinkActive && blinkMode), activesmooth: timer <= 0, 'no-transition': blinkActive}">
         </div>
-        <div class="map-vignette" :class="[tenSecondsLeft && gameStarted && !gameFinished && hasTimer ? 'vignette' : 'vignette-out']">
-        </div>
+      <div class="map-vignette"
+           :class="[timer <= 0 ? 'vignette-out-timer' : tenSecondsLeft && gameStarted && !gameFinished && hasTimer ? 'vignette' : 'vignette-out']">
+      </div>
 
         <div class="navbar-list">
             <NavBar>
@@ -796,7 +797,7 @@ onUnmounted(() => {
         </transition>
         <transition name="fade">
             <InfoComponent v-if="isPopupOpen(popups.Credits)" class="settings-menu">
-                <InfoText variant="title" class="settings-title">Credits</InfoText>
+                <InfoText variant="title" class="settings-title" @click="showDebug = true">Credits</InfoText>
 
                 <div class="settings-section">
                     <InfoText variant="subtitle">Development</InfoText>
@@ -1209,6 +1210,11 @@ onUnmounted(() => {
 .vignette-out {
     box-shadow: none !important;
     transition: none !important;
+}
+
+.vignette-out-timer {
+  box-shadow: none !important;
+  transition: all 1.0s ease !important;
 }
 
 .no-transition {
