@@ -434,20 +434,22 @@ function calculatePoints(currentCoords, guessCoords, timeTaken) {
     points.value = Math.floor(maxPoints * Math.exp(-decayRate * adjustedDistance));
   }
 
-  const maxBonus = 2.0;
-  const decay = 0.861;
-  const speedBonus = 1 + (maxBonus - 1) * Math.exp(-decay * timeTaken);
+  function timeFactor(t) {
+    const decay = 0.861;
+    const clamped = Math.min(Math.max(t, 0), 25);
+    return 1 + Math.pow((25 - clamped) / 25, decay);
+  }
 
   const precisionMax = 0.6;
   let closeness = 0;
   if (distance.value <= 10) {
     closeness = (10 - distance.value) / 10;
   }
-  const timeFactor = Math.min(1, timeTaken / 15);
-  const precisionBonus = 1 + precisionMax * closeness * timeFactor;
 
-  score.value = points.value * speedBonus * precisionBonus;
+  const precisionBonus = 1 + precisionMax * closeness;
+  score.value = points.value * timeFactor(timeTaken) * precisionBonus;
 }
+
 
 
 function handleMapClick(coords) {
