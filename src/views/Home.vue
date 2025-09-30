@@ -434,20 +434,22 @@ function calculatePoints(currentCoords, guessCoords, timeTaken) {
     points.value = Math.floor(maxPoints * Math.exp(-decayRate * adjustedDistance));
   }
 
-  const maxBonus = 1.5;
-  const decay = 0.307;
-  const speedBonus = 1 + (maxBonus - 1) * Math.exp(-decay * timeTaken);
+  function timeFactor(t) {
+    const decay = 0.861;
+    const clamped = Math.min(Math.max(t, 0), 25);
+    return 1 + Math.pow((25 - clamped) / 25, decay);
+  }
 
   const precisionMax = 0.6;
   let closeness = 0;
   if (distance.value <= 10) {
     closeness = (10 - distance.value) / 10;
   }
-  const timeFactor = Math.min(1, timeTaken / 15);
-  const precisionBonus = 1 + precisionMax * closeness * timeFactor;
 
-  score.value = points.value * speedBonus * precisionBonus;
+  const precisionBonus = 1 + precisionMax * closeness;
+  score.value = points.value * timeFactor(timeTaken) * precisionBonus;
 }
+
 
 
 function handleMapClick(coords) {
@@ -599,8 +601,9 @@ onUnmounted(() => {
                   :pixelated="pixelatedMode" :inverted="invertedMode" :bw="bwMode" :blink="blinkActive"/>
         <div class="map-blur" :class="{ active: (countdown > 0 && gameStarted && !gameFinished) || (!blinkActive && blinkMode), activesmooth: timer <= 0, 'no-transition': blinkActive}">
         </div>
-        <div class="map-vignette" :class="[tenSecondsLeft && gameStarted && !gameFinished && hasTimer ? 'vignette' : 'vignette-out']">
-        </div>
+      <div class="map-vignette"
+           :class="[timer <= 0 ? 'vignette-out-timer' : tenSecondsLeft && gameStarted && !gameFinished && hasTimer ? 'vignette' : 'vignette-out']">
+      </div>
 
         <div class="navbar-list">
             <NavBar>
@@ -794,7 +797,7 @@ onUnmounted(() => {
         </transition>
         <transition name="fade">
             <InfoComponent v-if="isPopupOpen(popups.Credits)" class="settings-menu">
-                <InfoText variant="title" class="settings-title">Credits</InfoText>
+                <InfoText variant="title" class="settings-title" @click="showDebug = true">Credits</InfoText>
 
                 <div class="settings-section">
                     <InfoText variant="subtitle">Development</InfoText>
@@ -1206,6 +1209,11 @@ onUnmounted(() => {
 .vignette-out {
     box-shadow: none !important;
     transition: none !important;
+}
+
+.vignette-out-timer {
+  box-shadow: none !important;
+  transition: all 1.0s ease !important;
 }
 
 .no-transition {
