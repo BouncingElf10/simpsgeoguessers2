@@ -435,7 +435,7 @@ function calculatePoints(currentCoords, guessCoords, timeTaken) {
   }
 
   function timeFactor(t) {
-    const decay = 0.861;
+    const decay = 0.4;
     const clamped = Math.min(Math.max(t, 0), 25);
     return 1 + Math.pow((25 - clamped) / 25, decay);
   }
