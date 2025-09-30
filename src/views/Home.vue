@@ -434,8 +434,8 @@ function calculatePoints(currentCoords, guessCoords, timeTaken) {
     points.value = Math.floor(maxPoints * Math.exp(-decayRate * adjustedDistance));
   }
 
-  const maxBonus = 1.5;
-  const decay = 0.307;
+  const maxBonus = 2.0;
+  const decay = 0.861;
   const speedBonus = 1 + (maxBonus - 1) * Math.exp(-decay * timeTaken);
 
   const precisionMax = 0.6;
