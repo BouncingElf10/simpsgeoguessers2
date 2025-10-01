@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 
 import NavBar from "@/components/NavBar.vue";
 import NavItem from "@/components/NavItem.vue";
@@ -16,6 +16,8 @@ import SettingToggle from "@/components/SettingToggle.vue";
 import SettingSlider from "@/components/SettingSlider.vue";
 import SettingDropdown from "@/components/SettingDropdown.vue";
 import SettingInput from "@/components/SettingInput.vue";
+import places1 from "@/assets/maps/simps1/places.json";
+import places2 from "@/assets/maps/simps2/places.json";
 
 const mapImageRef = ref(null);
 const mapRef = ref(null);
@@ -322,9 +324,6 @@ function placedGuess() {
     }
 }
 
-import places1 from "@/assets/maps/simps1/places.json";
-import places2 from "@/assets/maps/simps2/places.json";
-
 const placesByMap = {
   1: places1,
   2: places2,
@@ -434,23 +433,25 @@ function calculatePoints(currentCoords, guessCoords, timeTaken) {
     points.value = Math.floor(maxPoints * Math.exp(-decayRate * adjustedDistance));
   }
 
-  function timeFactor(t) {
-    const decay = 0.861;
-    const clamped = Math.min(Math.max(t, 0), 25);
-    return 1 + Math.pow((25 - clamped) / 25, decay);
-  }
-
-  const precisionMax = 0.6;
-  let closeness = 0;
-  if (distance.value <= 10) {
-    closeness = (10 - distance.value) / 10;
-  }
-
-  const precisionBonus = 1 + precisionMax * closeness;
-  score.value = points.value * timeFactor(timeTaken) * precisionBonus;
+  score.value = scoreCalculation(distance.value, timeTaken);
 }
 
+function scoreCalculation(distance, time) {
+  const distanceDecay     = 35;
+  const timeBonusStrength = 1.763;
+  const timeDecay         = 10;
+  const closeRangeBoost   = 0.6;
+  const distanceWeighting = 1.2;
+  const softCapExponent   = 0.85;
 
+  const baseDistanceScore = 100 * Math.exp(-distance / distanceDecay);
+  const accuracyBoost = (distance <= 10) ? (1 + closeRangeBoost * (1 - distance / 10)) : 1;
+
+  const speedBonus = 1 + timeBonusStrength * Math.exp(-time / timeDecay)
+      * Math.pow(baseDistanceScore / 100, distanceWeighting);
+  const rawScore = baseDistanceScore * accuracyBoost * speedBonus;
+  return 100 * Math.pow(rawScore / 100, softCapExponent);
+}
 
 function handleMapClick(coords) {
   const mc = mapToMc(coords.x, coords.y, alignmentData.value);
