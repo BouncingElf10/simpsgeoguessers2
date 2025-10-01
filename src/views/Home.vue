@@ -419,19 +419,19 @@ function finalGuessTime(seconds) {
 }
 
 function calculatePoints(currentCoords, guessCoords, timeTaken) {
-  const xDiff = currentCoords.x - guessCoords.x;
-  const yDiff = currentCoords.y - guessCoords.y;
-  distance.value = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+    const xDiff = currentCoords.x - guessCoords.x;
+    const yDiff = currentCoords.y - guessCoords.y;
+    distance.value = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
 
-  const maxPoints = 100;
-  const decayRate = 0.01;
+    const maxPoints = 100;
+    const decayRate = 0.01;
 
-  if (distance.value <= 10) {
-    points.value = maxPoints;
-  } else {
-    const adjustedDistance = distance.value - 10;
-    points.value = Math.floor(maxPoints * Math.exp(-decayRate * adjustedDistance));
-  }
+    if (distance.value <= 10) {
+        points.value = maxPoints;
+    } else {
+        const adjustedDistance = distance.value - 10;
+        points.value = Math.floor(maxPoints * Math.exp(-decayRate * adjustedDistance));
+    }
 
   score.value = scoreCalculation(distance.value, timeTaken);
 }
@@ -454,8 +454,8 @@ function scoreCalculation(distance, time) {
 }
 
 function handleMapClick(coords) {
-  const mc = mapToMc(coords.x, coords.y, alignmentData.value);
-  guessCoords.value = { x: Math.floor(mc.x), y: Math.floor(mc.y) };
+    const mc = mapToMc(coords.x, coords.y, alignmentData.value);
+    guessCoords.value = { x: Math.floor(mc.x), y: Math.floor(mc.y) };
 }
 
 function handleKeydown(e) {
@@ -991,7 +991,6 @@ onUnmounted(() => {
 }
 
 .settings-section {
-    margin-top: 25px;
     padding: 20px;
     border-radius: 12px;
     background: rgba(255,255,255,0.05);

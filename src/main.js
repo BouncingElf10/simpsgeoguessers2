@@ -24,5 +24,4 @@ const app = createApp(App);
 app.use(router);
 app.mount('#app');
 
-//TODO: fix admin panel
-//TODO: mobile controls -- maybe
+//TODO: redo point system
