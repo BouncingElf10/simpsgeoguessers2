@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 
 import NavBar from "@/components/NavBar.vue";
 import NavItem from "@/components/NavItem.vue";
@@ -16,6 +16,8 @@ import SettingToggle from "@/components/SettingToggle.vue";
 import SettingSlider from "@/components/SettingSlider.vue";
 import SettingDropdown from "@/components/SettingDropdown.vue";
 import SettingInput from "@/components/SettingInput.vue";
+import places1 from "@/assets/maps/simps1/places.json";
+import places2 from "@/assets/maps/simps2/places.json";
 
 const mapImageRef = ref(null);
 const mapRef = ref(null);
@@ -322,9 +324,6 @@ function placedGuess() {
     }
 }
 
-import places1 from "@/assets/maps/simps1/places.json";
-import places2 from "@/assets/maps/simps2/places.json";
-
 const placesByMap = {
   1: places1,
   2: places2,
@@ -436,8 +435,6 @@ function calculatePoints(currentCoords, guessCoords, timeTaken) {
 
     score.value = points.value / Math.log10(timeTaken + 1);
 }
-
-
 
 function handleMapClick(coords) {
     const mc = mapToMc(coords.x, coords.y, alignmentData.value);
@@ -651,7 +648,7 @@ onUnmounted(() => {
             <NavItem>Distance: {{ Math.round(distance) }} blocks</NavItem>
             <NavItem>Points: {{ points }}</NavItem>
             <NavItem>Score: {{ score.toFixed(2) }}</NavItem>
-            <NavItem>Round: {{ round }}/5</NavItem>
+            <NavItem>Round: {{ round }} / {{ maxRounds }}</NavItem>
         </NavBar>
         <InfoComponent class="end-stats" v-if="gameFinished">
             <InfoText variant="title">Game Over!</InfoText>
@@ -1262,15 +1259,15 @@ onUnmounted(() => {
 }
 
 .end-stats {
-    position: absolute;
-    left: 0;
-    margin: 15px;
-    z-index: 20000;
-    height: fit-content;
-    width: 30%;
-    padding: 15px;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  margin: 15px;
+  z-index: 20000;
+  width: 30%;
+  padding: 15px;
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
 }
 
 .start-bar {
