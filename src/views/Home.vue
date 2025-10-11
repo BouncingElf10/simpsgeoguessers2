@@ -499,7 +499,9 @@ const debugSections = computed(() => ({
 }));
 
 async function submitScore() {
-    isSubmitting.value = true;
+  if (isSubmitting.value) return;
+
+  isSubmitting.value = true;
     statusMessage.value = '';
     try {
         const res = await fetch('/api/submit', {
@@ -682,7 +684,11 @@ onUnmounted(() => {
                 label="Save your score"
                 placeholder="Enter your name..."
                 button-text="Submit"
-                @submit="submitScore"
+                @submit="() => {
+                    if (!isSubmitting) {
+                        submitScore();
+                    }
+                }"
                 storage-key="username-setting"
                 :hasSubmitted="hasSumbmitted"
                 @input="cleanUsername"
