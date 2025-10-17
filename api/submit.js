@@ -63,8 +63,19 @@ export default async function handler(req, res) {
             if (score <= 10) return res.status(400).json({ error: 'At least get some score before submitting...' });
             const usernameCheck = isCleanUsername(username);
             if (!usernameCheck.isClean) {
-                return res.status(400).json({error: `really dude? found -> "${usernameCheck.foundProfanity}"`});
+                return res.status(400).json({error: `this might be an error but found -> "${usernameCheck.foundProfanity}"`});
             }
+
+            const existingEntries = await redis.lrange(`leaderboard:${map}`, 0, -1);
+            const isDuplicate = existingEntries.some(entry => {
+                const parsed = JSON.parse(entry);
+                return parsed.username === username && parsed.score === score;
+            });
+
+            if (isDuplicate) {
+                return res.status(400).json({error: 'Duplicate submission!'});
+            }
+
             const ip = getIp(req);
             const ipHash = hashIp(ip);
 
