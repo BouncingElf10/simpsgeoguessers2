@@ -72,13 +72,18 @@ export default async function handler(req, res) {
             console.log('[DUP-CHECK] Raw Redis entries:', existingEntries);
 
             const parsedEntries = existingEntries.map((entry, i) => {
-                try {
-                    const parsed = JSON.parse(entry);
-                    console.log(`[DUP-CHECK] Parsed entry [${i}]:`, parsed);
-                    return parsed;
-                } catch (err) {
-                    console.warn(`[DUP-CHECK] Failed to parse entry [${i}]:`, entry);
-                    return null;
+                if (typeof entry === "string") {
+                    try {
+                        const parsed = JSON.parse(entry);
+                        console.log(`[DUP-CHECK] Parsed (string) [${i}]:`, parsed);
+                        return parsed;
+                    } catch (err) {
+                        console.warn(`[DUP-CHECK] Failed to parse string entry [${i}]:`, entry);
+                        return null;
+                    }
+                } else {
+                    console.log(`[DUP-CHECK] Using raw object [${i}]:`, entry);
+                    return entry;
                 }
             }).filter(Boolean);
 
@@ -95,7 +100,6 @@ export default async function handler(req, res) {
             if (isDuplicate) {
                 return res.status(400).json({ error: 'Duplicate submission!' });
             }
-
 
             const ip = getIp(req);
             const ipHash = hashIp(ip);
