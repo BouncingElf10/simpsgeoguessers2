@@ -68,14 +68,20 @@ export default async function handler(req, res) {
             }
 
             const existingEntries = await redis.lrange(`leaderboard:${map}`, 0, -1);
-            const isDuplicate = existingEntries.some(entry => {
-                try {
-                    const parsed = JSON.parse(entry);
-                    return parsed.username === username && parsed.score === score;
-                } catch {
-                    return false;
-                }
-            });
+
+            const parsedEntries = existingEntries
+                .map(entry => {
+                    try {
+                        return JSON.parse(entry);
+                    } catch {
+                        return null;
+                    }
+                })
+                .filter(entry => entry !== null);
+
+            const isDuplicate = parsedEntries.some(e =>
+                e.username === username && e.score === score
+            );
 
             if (isDuplicate) {
                 return res.status(400).json({error: 'Duplicate submission!'});
