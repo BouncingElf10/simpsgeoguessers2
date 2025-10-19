@@ -433,7 +433,7 @@ function calculatePoints(currentCoords, guessCoords, timeTaken) {
         points.value = Math.floor(maxPoints * Math.exp(-decayRate * adjustedDistance));
     }
 
-    score.value = points.value / Math.log10(timeTaken + 1);
+    score.value = Math.min(points.value / Math.log10(timeTaken + 1), points.value * 2 );
 }
 
 function handleMapClick(coords) {

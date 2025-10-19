@@ -1,7 +1,8 @@
-import { Redis } from '@upstash/redis';
+import {Redis} from '@upstash/redis';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 import Filter from 'leo-profanity';
+
 dotenv.config({ path: '.env.local' });
 
 const redis = Redis.fromEnv();
@@ -69,33 +70,21 @@ export default async function handler(req, res) {
 
             const existingEntries = await redis.lrange(`leaderboard:${map}`, 0, -1);
 
-            console.log('[DUP-CHECK] Raw Redis entries:', existingEntries);
-
             const parsedEntries = existingEntries.map((entry, i) => {
                 if (typeof entry === "string") {
                     try {
-                        const parsed = JSON.parse(entry);
-                        console.log(`[DUP-CHECK] Parsed (string) [${i}]:`, parsed);
-                        return parsed;
+                        return JSON.parse(entry);
                     } catch (err) {
-                        console.warn(`[DUP-CHECK] Failed to parse string entry [${i}]:`, entry);
                         return null;
                     }
                 } else {
-                    console.log(`[DUP-CHECK] Using raw object [${i}]:`, entry);
                     return entry;
                 }
             }).filter(Boolean);
 
             const isDuplicate = parsedEntries.some((e, i) => {
-                const match = e.username === username && e.score === score;
-                if (match) {
-                    console.log(`[DUP-CHECK] >>> DUPLICATE FOUND at index ${i}:`, e);
-                }
-                return match;
+                return e.username === username && e.score === score;
             });
-
-            console.log('[DUP-CHECK] isDuplicate result:', isDuplicate);
 
             if (isDuplicate) {
                 return res.status(400).json({ error: 'Duplicate submission!' });
