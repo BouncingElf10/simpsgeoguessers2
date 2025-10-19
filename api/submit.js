@@ -69,23 +69,33 @@ export default async function handler(req, res) {
 
             const existingEntries = await redis.lrange(`leaderboard:${map}`, 0, -1);
 
-            const parsedEntries = existingEntries
-                .map(entry => {
-                    try {
-                        return JSON.parse(entry);
-                    } catch {
-                        return null;
-                    }
-                })
-                .filter(entry => entry !== null);
+            console.log('[DUP-CHECK] Raw Redis entries:', existingEntries);
 
-            const isDuplicate = parsedEntries.some(e =>
-                e.username === username && e.score === score
-            );
+            const parsedEntries = existingEntries.map((entry, i) => {
+                try {
+                    const parsed = JSON.parse(entry);
+                    console.log(`[DUP-CHECK] Parsed entry [${i}]:`, parsed);
+                    return parsed;
+                } catch (err) {
+                    console.warn(`[DUP-CHECK] Failed to parse entry [${i}]:`, entry);
+                    return null;
+                }
+            }).filter(Boolean);
+
+            const isDuplicate = parsedEntries.some((e, i) => {
+                const match = e.username === username && e.score === score;
+                if (match) {
+                    console.log(`[DUP-CHECK] >>> DUPLICATE FOUND at index ${i}:`, e);
+                }
+                return match;
+            });
+
+            console.log('[DUP-CHECK] isDuplicate result:', isDuplicate);
 
             if (isDuplicate) {
-                return res.status(400).json({error: 'Duplicate submission!'});
+                return res.status(400).json({ error: 'Duplicate submission!' });
             }
+
 
             const ip = getIp(req);
             const ipHash = hashIp(ip);
