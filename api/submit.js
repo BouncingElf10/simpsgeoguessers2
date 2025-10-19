@@ -60,6 +60,7 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
         try {
             const { username, score, totalTime, points, map } = req.body;
+            if (!map) return res.status(400).json({ error: 'Missing map id' });
             if (score <= 10) return res.status(400).json({ error: 'At least get some score before submitting...' });
             const usernameCheck = isCleanUsername(username);
             if (!usernameCheck.isClean) {
@@ -68,8 +69,12 @@ export default async function handler(req, res) {
 
             const existingEntries = await redis.lrange(`leaderboard:${map}`, 0, -1);
             const isDuplicate = existingEntries.some(entry => {
-                const parsed = JSON.parse(entry);
-                return parsed.username === username && parsed.score === score;
+                try {
+                    const parsed = JSON.parse(entry);
+                    return parsed.username === username && parsed.score === score;
+                } catch {
+                    return false;
+                }
             });
 
             if (isDuplicate) {
