@@ -90,7 +90,7 @@ async function banUsername(username) {
                 v-model="adminToken"
                 placeholder="Enter admin token"
             />
-            <button @click="login">Login</button>
+            <button @click="login" style="margin: 0">Login</button>
             <p class="message" v-if="message">{{ message }}</p>
         </div>
     </div>
@@ -243,7 +243,7 @@ body {
 
 button {
     padding: 6px 12px;
-    margin: 0;
+    margin: 0 4px;
     background-color: #d33;
     color: #fff;
     border: none;
