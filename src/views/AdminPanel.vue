@@ -1,38 +1,44 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 
 const adminToken = ref("");
+const isLoggedIn = ref(false);
+const message = ref("");
 const recent = ref([]);
 const banned = ref([]);
-const message = ref("");
 
-async function loadRecent() {
-    if (!adminToken.value) return;
+async function login() {
+    if (!adminToken.value) {
+        message.value = "Please enter an admin token";
+        return;
+    }
+
     try {
         const res = await fetch("/api/admin/recent", {
-            headers: { "x-admin-token": adminToken.value }
+            headers: { "x-admin-token": adminToken.value },
         });
         const data = await res.json();
 
         if (res.ok) {
             recent.value = data.submissions.map(s => typeof s === "string" ? JSON.parse(s) : s);
+            await loadBanned();
+            isLoggedIn.value = true;
+            message.value = "";
         } else {
-            message.value = data.error || "Failed to load recent submissions";
+            message.value = data.error || "Invalid admin token";
         }
     } catch (err) {
         console.error(err);
-        message.value = "Network error while loading recent submissions";
+        message.value = "Network error while validating token";
     }
 }
 
 async function loadBanned() {
-    if (!adminToken.value) return;
     try {
         const res = await fetch("/api/admin/banned", {
             headers: { "x-admin-token": adminToken.value }
         });
         const data = await res.json();
-
         if (res.ok) {
             banned.value = data.bannedList;
         } else {
@@ -73,16 +79,23 @@ async function banUsername(username) {
     message.value = JSON.stringify(data);
     await loadBanned();
 }
-
-onMounted(() => {
-    adminToken.value = prompt("Enter admin token:");
-    loadRecent();
-    loadBanned();
-});
 </script>
 
 <template>
-    <div class="admin-panel settings-menu">
+    <div class="login-screen" v-if="!isLoggedIn">
+        <div class="login-box">
+            <h2>Admin Login</h2>
+            <input
+                type="password"
+                v-model="adminToken"
+                placeholder="Enter admin token"
+            />
+            <button @click="login">Login</button>
+            <p class="message" v-if="message">{{ message }}</p>
+        </div>
+    </div>
+
+    <div v-else class="admin-panel settings-menu">
         <h2 class="info-text title">Admin Panel – Bans</h2>
         <p class="info-text highlight" v-if="message">{{ message }}</p>
 
@@ -120,10 +133,58 @@ onMounted(() => {
             </ul>
         </div>
     </div>
+
     <div class="background"></div>
 </template>
 
 <style scoped>
+.login-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #1b1b1b;
+    font-family: 'Barlow', sans-serif;
+}
+
+.login-box {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 40px 30px;
+    border-radius: 16px;
+    color: #fff;
+    width: 300px;
+    text-align: center;
+}
+
+.login-box input {
+    width: calc(100% - 25px);
+    padding: 10px 12px;
+    margin: 12px 0;
+    border-radius: 8px;
+    border: none;
+    font-family: 'Barlow', sans-serif;
+}
+
+.login-box button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    background-color: #d33;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 500;
+    width: 100%;
+}
+
+.login-box button:hover {
+    background-color: #a22;
+}
+
+.message {
+    color: #f88;
+    margin-top: 12px;
+}
+
 .background {
     position: fixed;
     top: 0;
@@ -182,7 +243,7 @@ body {
 
 button {
     padding: 6px 12px;
-    margin: 0 4px;
+    margin: 0;
     background-color: #d33;
     color: #fff;
     border: none;

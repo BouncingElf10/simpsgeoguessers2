@@ -1114,7 +1114,7 @@ onUnmounted(() => {
     color: #fff;
     font-weight: 600;
     font-size: 0.9em;
-    pointer-events: none; /* prevents UI overlap issues */
+    pointer-events: none;
     animation: fade-slide 0.3s ease-out;
     z-index: 10;
 }
