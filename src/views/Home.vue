@@ -242,6 +242,9 @@ function startGame() {
     mapRef.value.defaultBounds()
     continueButonName.value = "Continue"
     round.value = 0;
+    totalPoints.value = 0;
+    totalScore.value = 0;
+    totalTimeTaken.value = 0;
     guessHistory.value = [];
     continueGame()
 }
