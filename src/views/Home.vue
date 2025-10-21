@@ -715,11 +715,15 @@ onUnmounted(() => {
             <InfoComponent v-if="isPopupOpen(popups.Settings)" class="settings-menu">
                 <InfoText variant="title" class="settings-title">Settings</InfoText>
 
-                <div class="settings-section">
-                    <InfoText variant="subtitle">Game Options</InfoText>
-                  <div v-if="!hasDefaultSettings" class="warning-box">
-                    Warning: Custom settings are enabled. You must have default settings to submit scores!
-                  </div>
+                <div class="settings-section warning-wrapper">
+                  <InfoText variant="subtitle">Game Options</InfoText>
+
+                    <transition name="fade">
+                        <div v-if="!hasDefaultSettings" class="warning-box">
+                            Warning: Custom settings are enabled. You must have default settings to submit scores!
+                        </div>
+                    </transition>
+
                   <div class="settings-grid">
                         <SettingToggle v-model="hasTimer" label="Enable Timer" @update:modelValue="startGame" />
                         <SettingSlider v-model.number="countdownTimeSeconds" label="Countdown" :min="1" :max="10" @update:modelValue="startGame" />
@@ -1091,30 +1095,37 @@ onUnmounted(() => {
     gap: 12px 20px;
     align-items: center;
 }
-
-.warning-box {
-  background: rgba(255, 0, 0, 0.2);
-  border: 1px solid rgba(255, 0, 0, 0.4);
-  border-radius: 8px;
-  padding: 12px;
-  margin: 10px 0;
-  color: #ff4444;
-  font-weight: 500;
-  transform-origin: top;
-  animation: warning-slide-down 0.3s ease-out;
+.warning-wrapper {
+    position: relative;
 }
 
-@keyframes warning-slide-down {
-  from {
-    transform: scaleY(0);
+.warning-box {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 70, 70, 0.9);
+    border: 1px solid rgba(255, 120, 120, 0.9);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9em;
+    pointer-events: none; /* prevents UI overlap issues */
+    animation: fade-slide 0.3s ease-out;
+    z-index: 10;
+}
+
+@keyframes fade-slide {
+    from { opacity: 0; transform: translate(-50%, -10px); }
+    to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.25s ease;
+}
+.fade-enter-from, .fade-leave-to {
     opacity: 0;
-    margin-top: -40px;
-  }
-  to {
-    transform: scaleY(1);
-    opacity: 1;
-    margin-top: 10px;
-  }
 }
 
 @media (orientation: portrait) {
