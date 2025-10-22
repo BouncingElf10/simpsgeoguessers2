@@ -463,6 +463,16 @@ function handleKeydown(e) {
     }
 }
 
+const activeModifiers = computed(() => {
+  const mods = [];
+  if (blinkMode.value) mods.push("Blink Mode");
+  if (invertedMode.value) mods.push("Inverted Colors");
+  if (bwMode.value) mods.push("Black & White");
+  if (pixelatedMode.value) mods.push("Pixelated");
+  if (!hasTimer.value) mods.push("No Timer");
+  return mods;
+});
+
 const debugSections = computed(() => ({
     Game: {
         started: gameStarted.value,
@@ -661,6 +671,10 @@ onUnmounted(() => {
                 Total Points: <strong>{{ totalPoints }}</strong> / {{ maxRounds * 100 }} <br>
                 Total Time Taken: <strong>{{ totalTimeTaken.toFixed(2) }}</strong> seconds <br>
                 Total Score: <strong>{{ totalScore.toFixed(2) }}</strong>
+              <template v-if="activeModifiers.length > 0">
+                <br>Active Modifiers: <strong>{{ activeModifiers.join(", ") }}</strong>
+              </template>
+
             </InfoText>
 
             <div class="end-stats-text">
