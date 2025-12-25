@@ -22,7 +22,7 @@ import places2 from "@/assets/maps/simps2/places.json";
 const mapImageRef = ref(null);
 const mapRef = ref(null);
 
-const alignmentData = ref(getAlignmentDataForMap(getMapIdFromName("SIMPS SMP Season 2")));
+const alignmentData = ref(getAlignmentDataForMap(getMapIdFromName("SIMPS SMP Season 1")));
 const offset = ref({
     x: alignmentData.value.mapX - alignmentData.value.mcX,
     y: alignmentData.value.mapY - alignmentData.value.mcY,
