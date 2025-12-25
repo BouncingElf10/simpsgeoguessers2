@@ -65,7 +65,7 @@ const invertedMode = ref(false)
 const bwMode = ref(false)
 const pixelatedMode = ref(false)
 const currentPopupOpen = ref(null);
-const selectedMap = ref("SIMPS SMP Season 2")
+const selectedMap = ref("SIMPS SMP Season 1")
 const selectedMapId = ref(getMapIdFromName(selectedMap.value))
 const showDebug = ref(false);
 
