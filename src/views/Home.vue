@@ -75,7 +75,6 @@ const statusMessage = ref("");
 const hasDefaultSettings = ref(false);
 const isSubmitting = ref(false);
 
-
 const DEFAULT_SETTINGS = {
     hasTimer: true,
     blinkMode: false,
@@ -171,7 +170,7 @@ watch(selectedMap, (newVal) => {
 function getAlignmentDataForMap(mapId) {
     switch (mapId) {
         case 2:
-            return {mapX: 796, mapY: 656, mcX: 169, mcY: 48};
+            return {mapX: 4401, mapY: 4408, mcX: 169, mcY: -48};
         case 1:
             return {mapX: 3027, mapY: 2729, mcX: 1491, mcY: 9047};
     }

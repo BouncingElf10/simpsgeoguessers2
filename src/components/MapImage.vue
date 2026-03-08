@@ -19,7 +19,7 @@
     const images = import.meta.glob('../assets/maps/simps*/images/*.{jpg,png}');
 
     async function getImageUrl(id: number, mapId: number): Promise<string> {
-      const pngPath = `../assets/maps/simps${mapId}/images/${id}.png`;
+      const pngPath = `../assets/maps/simps${mapId}/images/image${id}.png`;
       const jpgPath = `../assets/maps/simps${mapId}/images/image${id}.jpg`;
 
       if (images[pngPath]) {

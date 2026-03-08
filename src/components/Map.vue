@@ -20,7 +20,7 @@
         if (props.mapId === 1) {
             return [[0, 0], [5632, 6144]];
         } else if (props.mapId === 2) {
-            return [[0, 0], [4096, 4096]];
+            return [[0, 0], [9008, 9024]];
         }
         return [[0, 0], [5632, 6144]];
     });
@@ -31,6 +31,7 @@
     const imageUrl = computed(() =>
         new URL(`../assets/maps/simps${props.mapId}/map.png`, import.meta.url).href
     )
+
     let imageOverlay: L.ImageOverlay | null = null;
 
     onMounted(() => {
