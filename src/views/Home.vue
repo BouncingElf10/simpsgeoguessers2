@@ -170,7 +170,7 @@ watch(selectedMap, (newVal) => {
 function getAlignmentDataForMap(mapId) {
     switch (mapId) {
         case 2:
-            return {mapX: 4401, mapY: 4408, mcX: 169, mcY: -48};
+            return {mapX: 4570 - 169, mapY: 4360 + 48, mcX: 169, mcY: 48};
         case 1:
             return {mapX: 3027, mapY: 2729, mcX: 1491, mcY: 9047};
     }

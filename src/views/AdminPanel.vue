@@ -116,7 +116,6 @@ async function runCleanup() {
 </script>
 
 <template>
-
     <div class="login-screen" v-if="!isLoggedIn">
         <div class="login-box">
             <h2>Admin Login</h2>
@@ -131,9 +130,7 @@ async function runCleanup() {
         <p class="info-text highlight" v-if="message">{{ message }}</p>
 
         <div class="settings-section cleanup-section">
-            <h3 class="info-text subtitle">
-                <span class="section-icon">🧹</span> DB Cleanup
-            </h3>
+            <h3 class="info-text subtitle">DB Cleanup</h3>
             <p class="info-text body section-desc">
                 Removes duplicate usernames from a leaderboard, keeping only each player's highest score.
             </p>
@@ -219,7 +216,6 @@ async function runCleanup() {
             </table>
         </div>
 
-        <!-- ── BANNED LIST ── -->
         <div class="settings-section">
             <h3 class="info-text subtitle">Banned List</h3>
             <ul>
