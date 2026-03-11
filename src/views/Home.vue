@@ -288,7 +288,7 @@ function placedGuess() {
     pauseTimer()
     isFullscreen.value = true;
     mapRef.value.lockMap(true)
-    if (!currentCoords.value?.x || !currentCoords.value?.y) {
+    if (currentCoords.value?.x == null && currentCoords.value?.y == null) {
         console.warn("No current place selected yet");
         return;
     }
@@ -630,12 +630,12 @@ onUnmounted(() => {
             </div>
           <NavBar class="guess-bar small-guess-bar">
           <NavItem
-                    :class="{disabled: (!guessCoords.x && !guessCoords.y) || countdown > 0,
+                    :class="{disabled: (guessCoords.x == null && guessCoords.y == null) || countdown > 0,
                         'guess-item': !hasTimer || timer <= 0,
                         'guess-item-timer': hasTimer && timer > 0
                     }"
                     @click="() => {
-                        if ((!guessCoords.x && !guessCoords.y) || countdown > 0) return;
+                        if ((guessCoords.x == null && guessCoords.y == null) || countdown > 0) return;
                         placedGuess();
                     }">
                     Guess
