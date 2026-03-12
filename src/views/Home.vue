@@ -333,7 +333,7 @@ const placesByMap = {
 
 function getRandomPlace(selectedMapId) {
   const PlacesJson = placesByMap[selectedMapId];
-  const randomIndex = Math.floor(Math.random() * PlacesJson.length);
+  const randomIndex = Math.floor(Math.random() * PlacesJson.length) // * 0 + 140 - 1
   const randomPlace = PlacesJson[randomIndex];
 
   currentId.value = randomPlace.id;
